@@ -32,25 +32,20 @@ public class BattleManager extends Application {
         Scene scene = new Scene(root, 600, 450, Color.BLUE);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
 
-        battleBox = new Rectangle(300, 200); // just width & height
+        battleBox = new Rectangle(300, 200);
         battleBox.setStroke(Color.WHITE);
-        battleBox.setStrokeWidth(2);  // adjust thickness as you like
+        battleBox.setStrokeWidth(2);
 
-        // Make battleBox bigger (e.g., 400 width x 300 height)
         battleBox.setWidth(400);
         battleBox.setHeight(300);
 
-// Center X stays the same:
         battleBox.xProperty().bind(scene.widthProperty().subtract(battleBox.widthProperty()).divide(2));
-
-// Move it higher by subtracting some pixels from the centered Y position:
         battleBox.yProperty().bind(scene.heightProperty().subtract(battleBox.heightProperty()).divide(2).subtract(40));
-        // قلب بازیکن
+
         heart = new Circle(10, Color.RED);
         heart.setLayoutX(scene.getWidth() / 2);
         heart.setLayoutY(scene.getHeight() / 2);
 
-// Optional: update position if window resizes
         scene.widthProperty().addListener((obs, oldVal, newVal) -> {
             if (!heart.isPressed()) { // if you want to control when to update
                 heart.setLayoutX(newVal.doubleValue() / 2);
@@ -75,7 +70,6 @@ public class BattleManager extends Application {
         playerHPBackground.xProperty().bind(scene.widthProperty().subtract(playerHPBackground.widthProperty()).divide(2));
         playerHPBackground.yProperty().bind(Bindings.add(battleBox.yProperty(), battleBox.heightProperty()).add(40));
 
-        // تصویر ویلن (فعلاً مستطیل به جای تصویر)
         Rectangle villainImage = new Rectangle(120, 80, Color.DARKGRAY);
         villainImage.layoutXProperty().bind(scene.widthProperty().subtract(villainImage.widthProperty()).divide(2));
         villainImage.layoutYProperty().bind(scene.heightProperty().multiply(0.1)); // ~30/450
@@ -104,7 +98,6 @@ public class BattleManager extends Application {
         itemButton.getStyleClass().add("game-button");
         talkButton.getStyleClass().add("game-button");
 
-        // Background with updated size
         Rectangle dialogueBackground = new Rectangle();
         dialogueBackground.widthProperty().bind(scene.widthProperty().multiply(0.15));  // half the previous width
         dialogueBackground.heightProperty().bind(scene.heightProperty().multiply(0.2)); // double the previous height
@@ -114,18 +107,16 @@ public class BattleManager extends Application {
         dialogueBackground.setStroke(Color.WHITE);
         dialogueBackground.setStrokeWidth(2);
 
-// Dialogue text with adjusted wrapping
         dialogueText = new Text();
         dialogueText.setFill(Color.WHITE);
         dialogueText.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14;");
         dialogueText.wrappingWidthProperty().bind(dialogueBackground.widthProperty().subtract(20));
 
 
-// Dialogue bar container
         dialogueBar = new StackPane(dialogueBackground, dialogueText);
         dialogueBar.layoutXProperty().bind(scene.widthProperty().subtract(dialogueBackground.widthProperty()).subtract(400));
         dialogueBar.layoutYProperty().bind(scene.heightProperty().multiply(0.1));
-        dialogueBar.setVisible(false);
+        dialogueBar.setVisible(true);
 
 
 
@@ -136,7 +127,6 @@ public class BattleManager extends Application {
         );
 
 
-        // حرکت قلب
         scene.setOnKeyPressed(e -> {
             switch (e.getCode()) {
                 case W -> moveHeart(0, -5);
@@ -145,7 +135,6 @@ public class BattleManager extends Application {
                 case D -> moveHeart(5, 0);
             }
         });
-
 
 
         stage.setTitle("Undertale Boss Fight - Step 3");
