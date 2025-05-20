@@ -1,0 +1,24 @@
+- Design: maria
+	1. health bar (player + enemy)
+	2. Scene and show + box + buttons
+	3. enemy png 
+	4. dialog box showcase 
+	
+-Core:
+	1. switch turns mmr 
+	2. enemy attack patterns nima
+		...
+	3. player attack pattern arya
+	4. player talk system mmr
+	5. enemy dialog resource mmr
+	6. item maria
+
+- UI:
+	1. Music arya
+	2. Animation
+		I. enemy maria
+		II. enemy attacks nima
+		
+		
+	
+	
