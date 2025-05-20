@@ -2,6 +2,7 @@ import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -13,6 +14,9 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+
 
 public class BattleManager extends Application {
 
@@ -25,11 +29,29 @@ public class BattleManager extends Application {
 
     @Override
     public void start(Stage stage) {
+
+        stage.setOnCloseRequest(event -> {
+            event.consume();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Save Game");
+            alert.setHeaderText("Do you want to save before exiting?");
+            alert.setContentText("Your progress will be saved.");
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    // saveGame();
+                    stage.close();
+                }
+            });
+        });
+
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
 
         Scene scene = new Scene(root, 600, 450, Color.BLUE);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        stage.setMaximized(true);
+        stage.setResizable(false);
+
 
         battleBox = new Rectangle(300, 200);
         battleBox.setStroke(Color.WHITE);
@@ -117,7 +139,7 @@ public class BattleManager extends Application {
         dialogueBar = new StackPane(dialogueBackground, dialogueText);
         dialogueBar.layoutXProperty().bind(scene.widthProperty().subtract(dialogueBackground.widthProperty()).subtract(400));
         dialogueBar.layoutYProperty().bind(scene.heightProperty().multiply(0.1));
-        dialogueBar.setVisible(true);
+        dialogueBar.setVisible(false);
 
 
         root.getChildren().addAll(
@@ -157,6 +179,7 @@ public class BattleManager extends Application {
             heart.setLayoutY(newY);
         }
     }
+
     private void showDialogue(String message) {
         dialogueText.setText(message);
         dialogueBar.setVisible(true);
@@ -166,6 +189,9 @@ public class BattleManager extends Application {
         pause.play();
     }
 
+    //public void saveGame(){
+//    System.out.println("Saving game...");
+//}
     public static void main(String[] args) {
         launch(args);
 
