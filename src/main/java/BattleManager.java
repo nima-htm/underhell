@@ -119,7 +119,6 @@ public class BattleManager extends Application {
         dialogueBar.setVisible(true);
 
 
-
         root.getChildren().addAll(
                 villainImage, villainName,
                 battleBox, heart, playerHPBackground,dialogueBar, dialogueText,
