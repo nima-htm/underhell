@@ -1,4 +1,3 @@
-
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
@@ -97,6 +96,8 @@ public class BattleManager extends Application {
         fightButton.getStyleClass().add("game-button");
         itemButton.getStyleClass().add("game-button");
         talkButton.getStyleClass().add("game-button");
+        talkButton.setOnAction(e -> showDialogue("You tried talking, but it didn't seem to have any effect..."));
+
 
         Rectangle dialogueBackground = new Rectangle();
         dialogueBackground.widthProperty().bind(scene.widthProperty().multiply(0.15));  // half the previous width
@@ -109,7 +110,7 @@ public class BattleManager extends Application {
 
         dialogueText = new Text();
         dialogueText.setFill(Color.WHITE);
-        dialogueText.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14;");
+        dialogueText.getStyleClass().add("game-dialogue-text");
         dialogueText.wrappingWidthProperty().bind(dialogueBackground.widthProperty().subtract(20));
 
 
@@ -121,7 +122,7 @@ public class BattleManager extends Application {
 
         root.getChildren().addAll(
                 villainImage, villainName,
-                battleBox, heart, playerHPBackground,dialogueBar, dialogueText,
+                battleBox, heart, playerHPBackground, dialogueBar,
                 fightButton, itemButton, talkButton
         );
 
@@ -155,6 +156,14 @@ public class BattleManager extends Application {
                 newY <= battleBox.getY() + battleBox.getHeight() - heart.getRadius()) {
             heart.setLayoutY(newY);
         }
+    }
+    private void showDialogue(String message) {
+        dialogueText.setText(message);
+        dialogueBar.setVisible(true);
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        pause.setOnFinished(e -> dialogueBar.setVisible(false));
+        pause.play();
     }
 
     public static void main(String[] args) {
