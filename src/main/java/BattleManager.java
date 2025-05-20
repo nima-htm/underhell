@@ -1,3 +1,4 @@
+import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
@@ -6,6 +7,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -16,6 +18,9 @@ import javafx.util.Duration;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class BattleManager extends Application {
 
     private Rectangle battleBox;
@@ -24,7 +29,8 @@ public class BattleManager extends Application {
     private Pane dialogueBar;
     private Text dialogueText;
     private Path heart;
-
+    private Image villainImg;
+    private ImageView villainImage;
 
     @Override
     public void start(Stage stage) {
@@ -51,14 +57,11 @@ public class BattleManager extends Application {
         stage.setResizable(false);
 
 
-        battleBox = new Rectangle(300, 200);
+        battleBox = new Rectangle(500, 300);
         battleBox.setStroke(Color.WHITE);
         battleBox.setStrokeWidth(2);
 
-        battleBox.setWidth(400);
-        battleBox.setHeight(300);
-
-        battleBox.xProperty().bind(scene.widthProperty().subtract(battleBox.widthProperty()).divide(2));
+        battleBox.xProperty().bind(scene.widthProperty().subtract(battleBox.widthProperty()).divide(4));
         battleBox.yProperty().bind(scene.heightProperty().subtract(battleBox.heightProperty()).divide(2).subtract(40));
 
         heart = createHeartShape(20, Color.RED);
@@ -76,11 +79,6 @@ public class BattleManager extends Application {
             }
         });
 
-        Text villainName = new Text("VILLAIN");
-        villainName.setFill(Color.WHITE);
-        villainName.layoutXProperty().bind(scene.widthProperty().multiply(0.25)); // ~150/600
-        villainName.layoutYProperty().bind(scene.heightProperty().multiply(0.255)); // ~115/450
-        villainName.setStyle("-fx-font-size: 14; -fx-font-family: 'Courier New';");
 
         Rectangle playerHPBackground = new Rectangle();
         playerHPBackground.setFill(Color.DARKRED);
@@ -89,9 +87,14 @@ public class BattleManager extends Application {
         playerHPBackground.xProperty().bind(scene.widthProperty().subtract(playerHPBackground.widthProperty()).divide(2));
         playerHPBackground.yProperty().bind(Bindings.add(battleBox.yProperty(), battleBox.heightProperty()).add(40));
 
-        Rectangle villainImage = new Rectangle(120, 80, Color.DARKGRAY);
-        villainImage.layoutXProperty().bind(scene.widthProperty().subtract(villainImage.widthProperty()).divide(2));
-        villainImage.layoutYProperty().bind(scene.heightProperty().multiply(0.1)); // ~30/450
+        villainImg = new Image(getClass().getResource("/villain.png").toExternalForm());
+        villainImage = new ImageView(villainImg);
+        villainImage.setFitWidth(300);
+        villainImage.setFitHeight(300);
+
+        villainImage.layoutXProperty().bind(scene.widthProperty().subtract(villainImage.fitWidthProperty()).subtract(120));
+        villainImage.layoutYProperty().bind(scene.heightProperty().multiply(0.15));
+
 
 
         Button fightButton = new Button("FIGHT");
@@ -141,25 +144,60 @@ public class BattleManager extends Application {
 
 
         root.getChildren().addAll(
-                villainImage, villainName,
+                villainImage,
                 battleBox, heart, playerHPBackground, dialogueBar,
                 fightButton, itemButton, talkButton
         );
 
-        scene.setOnKeyPressed(e -> {
-            switch (e.getCode()) {
-                case W -> moveHeart(0, -7);
-                case S -> moveHeart(0, 7);
-                case A -> moveHeart(-7, 0);
-                case D -> moveHeart(7, 0);
+        final Set<KeyCode> activeKeys = new HashSet<>();
+        scene.setOnKeyPressed(event -> activeKeys.add(event.getCode()));
+        scene.setOnKeyReleased(event -> activeKeys.remove(event.getCode()));
+
+        AnimationTimer movement = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                double x = heart.getTranslateX();
+                double y = heart.getTranslateY();
+                final double speed = 0.75; //this variable must change in different OS
+                //if you are using Windows set it to 10
+                //if you have linux set it to 0.75
+                if (activeKeys.contains(KeyCode.A)) {
+                    moveHeart((-1)*speed, 0);
+                }
+                if (activeKeys.contains(KeyCode.D)) {
+                    moveHeart(speed, 0);
+                }
+                if (activeKeys.contains(KeyCode.W)) {
+                    moveHeart(0, (-1)*speed);
+                }
+                if (activeKeys.contains(KeyCode.S)) {
+                    moveHeart(0, speed);
+                }
             }
-        });
+        };
+        movement.start();
 
         stage.setTitle("Undertale Boss Fight - Step 3");
         stage.setScene(scene);
         stage.show();
     }
 
+    private void moveHeart(double dx, double dy) {
+        double newX = heart.getLayoutX() + dx;
+        double newY = heart.getLayoutY() + dy;
+        double minX = battleBox.getX();
+        double minY = battleBox.getY();
+        double maxX = battleBox.getX() + battleBox.getWidth();
+        double maxY = battleBox.getY() + battleBox.getHeight();
+        double heartWidth = heart.getBoundsInLocal().getWidth();
+        double heartHeight = heart.getBoundsInLocal().getHeight();
+        if (newX >= minX && newX + heartWidth <= maxX) {
+            heart.setLayoutX(newX);
+        }
+        if (newY >= minY && newY + heartHeight <= maxY) {
+            heart.setLayoutY(newY);
+        }
+    }
 
     private void showDialogue(String message) {
         dialogueText.setText(message);
@@ -188,22 +226,6 @@ public class BattleManager extends Application {
         return heart;
     }
 
-    private void moveHeart(double dx, double dy) {
-        double newX = heart.getLayoutX() + dx;
-        double newY = heart.getLayoutY() + dy;
-        double minX = battleBox.getX();
-        double minY = battleBox.getY();
-        double maxX = battleBox.getX() + battleBox.getWidth();
-        double maxY = battleBox.getY() + battleBox.getHeight();
-        double heartWidth = heart.getBoundsInLocal().getWidth();
-        double heartHeight = heart.getBoundsInLocal().getHeight();
-        if (newX >= minX && newX + heartWidth <= maxX) {
-            heart.setLayoutX(newX);
-        }
-        if (newY >= minY && newY + heartHeight <= maxY) {
-            heart.setLayoutY(newY);
-        }
-    }
 
     public static void main(String[] args) {
         launch(args);
