@@ -9,23 +9,22 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Circle;
+import javafx.scene.shape.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
-
 public class BattleManager extends Application {
 
     private Rectangle battleBox;
-    private Circle heart;
     private Rectangle villainHPBar;
     private Rectangle playerHPBackground;
     private Pane dialogueBar;
     private Text dialogueText;
+    private Path heart;
+
 
     @Override
     public void start(Stage stage) {
@@ -63,7 +62,7 @@ public class BattleManager extends Application {
         battleBox.xProperty().bind(scene.widthProperty().subtract(battleBox.widthProperty()).divide(2));
         battleBox.yProperty().bind(scene.heightProperty().subtract(battleBox.heightProperty()).divide(2).subtract(40));
 
-        heart = new Circle(10, Color.RED);
+        heart = createHeartShape(20, Color.RED);
         heart.setLayoutX(scene.getWidth() / 2);
         heart.setLayoutY(scene.getHeight() / 2);
 
@@ -148,37 +147,20 @@ public class BattleManager extends Application {
                 fightButton, itemButton, talkButton
         );
 
-
         scene.setOnKeyPressed(e -> {
             switch (e.getCode()) {
-                case W -> moveHeart(0, -5);
-                case S -> moveHeart(0, 5);
-                case A -> moveHeart(-5, 0);
-                case D -> moveHeart(5, 0);
+                case W -> moveHeart(0, -7);
+                case S -> moveHeart(0, 7);
+                case A -> moveHeart(-7, 0);
+                case D -> moveHeart(7, 0);
             }
         });
-
 
         stage.setTitle("Undertale Boss Fight - Step 3");
         stage.setScene(scene);
         stage.show();
     }
 
-
-    private void moveHeart(double dx, double dy) {
-        double newX = heart.getLayoutX() + dx;
-        double newY = heart.getLayoutY() + dy;
-
-        if (newX >= battleBox.getX() + heart.getRadius() &&
-                newX <= battleBox.getX() + battleBox.getWidth() - heart.getRadius()) {
-            heart.setLayoutX(newX);
-        }
-
-        if (newY >= battleBox.getY() + heart.getRadius() &&
-                newY <= battleBox.getY() + battleBox.getHeight() - heart.getRadius()) {
-            heart.setLayoutY(newY);
-        }
-    }
 
     private void showDialogue(String message) {
         dialogueText.setText(message);
@@ -189,9 +171,41 @@ public class BattleManager extends Application {
         pause.play();
     }
 
-    //public void saveGame(){
-//    System.out.println("Saving game...");
-//}
+    private Path createHeartShape(double size, Color color) {
+        Path heart = new Path();
+
+        heart.getElements().addAll(
+                new MoveTo(size / 2, size / 5),
+
+                new CubicCurveTo(size / 2, 0, 0, 0, 0, size / 3),
+                new CubicCurveTo(0, size / 2, size / 2, size * 0.8, size / 2, size),
+
+                new CubicCurveTo(size / 2, size * 0.8, size, size / 2, size, size / 3),
+                new CubicCurveTo(size, 0, size / 2, 0, size / 2, size / 5)
+        );
+        heart.setFill(color);
+        heart.setStroke(Color.BLACK);
+        heart.setStrokeWidth(1);
+        return heart;
+    }
+
+    private void moveHeart(double dx, double dy) {
+        double newX = heart.getLayoutX() + dx;
+        double newY = heart.getLayoutY() + dy;
+        double minX = battleBox.getX();
+        double minY = battleBox.getY();
+        double maxX = battleBox.getX() + battleBox.getWidth();
+        double maxY = battleBox.getY() + battleBox.getHeight();
+        double heartWidth = heart.getBoundsInLocal().getWidth();
+        double heartHeight = heart.getBoundsInLocal().getHeight();
+        if (newX >= minX && newX + heartWidth <= maxX) {
+            heart.setLayoutX(newX);
+        }
+        if (newY >= minY && newY + heartHeight <= maxY) {
+            heart.setLayoutY(newY);
+        }
+    }
+
     public static void main(String[] args) {
         launch(args);
 
