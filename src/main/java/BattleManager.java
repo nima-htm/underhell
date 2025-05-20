@@ -45,7 +45,6 @@ public class BattleManager extends Application {
 
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
-
         Scene scene = new Scene(root, 600, 450, Color.BLUE);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setMaximized(true);
@@ -117,7 +116,7 @@ public class BattleManager extends Application {
         fightButton.getStyleClass().add("game-button");
         itemButton.getStyleClass().add("game-button");
         talkButton.getStyleClass().add("game-button");
-        talkButton.setOnAction(e -> showDialogue("You tried talking, but it didn't seem to have any effect..."));
+        talkButton.setOnAction(e -> showDialogue("Why are you talking?   Are you courting death?!"));
 
 
         Rectangle dialogueBackground = new Rectangle();
