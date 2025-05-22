@@ -15,7 +15,6 @@ import javafx.scene.shape.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
 import java.util.HashSet;
@@ -23,6 +22,8 @@ import java.util.Set;
 
 public class BattleManager extends Application {
 
+
+    // Design vars
     private Rectangle battleBox;
     private Rectangle villainHPBar;
     private Rectangle playerHPBackground;
@@ -31,6 +32,14 @@ public class BattleManager extends Application {
     private Path heart;
     private Image villainImg;
     private ImageView villainImage;
+    //game state
+    private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
+    //talk system
+    private Button t_option1, t_option2, t_option3;
+
+    Button fightButton = new Button("FIGHT");
+    Button itemButton = new Button("ITEM");
+    Button talkButton = new Button("TALK");
 
     @Override
     public void start(Stage stage) {
@@ -51,7 +60,7 @@ public class BattleManager extends Application {
 
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
-        Scene scene = new Scene(root, 600, 450, Color.BLUE);
+        Scene scene = new Scene(root, 500, 450, Color.BLUE);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setMaximized(true);
         stage.setResizable(false);
@@ -95,11 +104,6 @@ public class BattleManager extends Application {
         villainImage.layoutXProperty().bind(scene.widthProperty().subtract(villainImage.fitWidthProperty()).subtract(120));
         villainImage.layoutYProperty().bind(scene.heightProperty().multiply(0.15));
 
-
-
-        Button fightButton = new Button("FIGHT");
-        Button itemButton = new Button("ITEM");
-        Button talkButton = new Button("TALK");
         fightButton.setPrefWidth(120);
         fightButton.setPrefHeight(50);
         itemButton.setPrefWidth(120);
@@ -119,7 +123,21 @@ public class BattleManager extends Application {
         fightButton.getStyleClass().add("game-button");
         itemButton.getStyleClass().add("game-button");
         talkButton.getStyleClass().add("game-button");
-        talkButton.setOnAction(e -> showDialogue("Why are you talking?   Are you courting death?!"));
+        talkButton.setOnAction(e -> {
+            if (currentState != GameState.PLAYER_CHOICE_OPTIONS) return;
+
+            currentState = GameState.PLAYER_CHOICE_TALK;
+            options_visibility(fightButton,talkButton,itemButton,false);
+            talk_options_visibility(true);
+        });
+
+        // Talk Options
+        t_option1 = createTalkOption("Plead", scene, 0);
+        t_option2 = createTalkOption("Insult", scene, 1);
+        t_option3 = createTalkOption("Stay Silent", scene, 2);
+        t_option1.setOnAction(e -> handlePlayerChoice("You plead. The villain chuckles."));
+        t_option2.setOnAction(e -> handlePlayerChoice("You insult the villain. Its eyes glow red."));
+        t_option3.setOnAction(e -> handlePlayerChoice("You stay silent. The air grows heavy."));
 
 
         Rectangle dialogueBackground = new Rectangle();
@@ -146,7 +164,8 @@ public class BattleManager extends Application {
         root.getChildren().addAll(
                 villainImage,
                 battleBox, heart, playerHPBackground, dialogueBar,
-                fightButton, itemButton, talkButton
+                fightButton, itemButton, talkButton,
+                t_option1, t_option2, t_option3
         );
 
         final Set<KeyCode> activeKeys = new HashSet<>();
@@ -177,7 +196,7 @@ public class BattleManager extends Application {
         };
         movement.start();
 
-        stage.setTitle("Undertale Boss Fight - Step 3");
+        stage.setTitle("Underhell Boss Fight");
         stage.setScene(scene);
         stage.show();
     }
@@ -220,10 +239,49 @@ public class BattleManager extends Application {
                 new CubicCurveTo(size / 2, size * 0.8, size, size / 2, size, size / 3),
                 new CubicCurveTo(size, 0, size / 2, 0, size / 2, size / 5)
         );
+        heart.setScaleX(1.5);
+        heart.setScaleY(1.5);
         heart.setFill(color);
         heart.setStroke(Color.BLACK);
         heart.setStrokeWidth(1);
         return heart;
+    }
+    private Button createTalkOption(String text, Scene scene, int index) {
+        Button btn = new Button(text);
+        btn.setPrefSize(200, 40);
+        btn.getStyleClass().add("talk-option");
+        btn.setVisible(false);
+        btn.layoutXProperty().bind(battleBox.xProperty().add(
+                battleBox.widthProperty().subtract(btn.prefWidthProperty()).divide(2)
+        ));
+        btn.layoutYProperty().bind(battleBox.yProperty().add(30 + index * 50));
+        return btn;
+    }
+    private void handlePlayerChoice(String message) {
+        talk_options_visibility(false);
+        showDialogue(message);
+        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        pause.setOnFinished(ev -> {
+            currentState = GameState.ENEMY_TURN;
+            System.out.println("enemy attacks !");
+            PauseTransition backToPlayer = new PauseTransition(Duration.seconds(0.1));
+            backToPlayer.setOnFinished(evt -> {
+                currentState = GameState.PLAYER_CHOICE_OPTIONS;
+                options_visibility(fightButton,talkButton,itemButton,true);
+            });
+            backToPlayer.play();
+        });
+        pause.play();
+    }
+    private void talk_options_visibility(boolean isVisible) {
+        t_option1.setVisible(isVisible);
+        t_option2.setVisible(isVisible);
+        t_option3.setVisible(isVisible);
+    }
+    private void options_visibility(Button f,Button t, Button i,boolean isVisible) {
+        f.setVisible(isVisible);
+        t.setVisible(isVisible);
+        i.setVisible(isVisible);
     }
 
 

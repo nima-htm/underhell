@@ -12,7 +12,7 @@
 }
 
 
-.game-button:hover {
+.game-button:focused {
     -fx-background-color: linear-gradient(#660000, #aa0000);
     -fx-text-fill: white;
     -fx-border-color: #ff0000;
@@ -27,3 +27,20 @@
     -fx-opacity: 0.85;
     -fx-transition: opacity 0.5s ease-in-out;
 }
+
+.talk-option {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-family: 'Consolas', monospace;
+    -fx-font-size: 16px;
+    -fx-border-color: black;
+    -fx-border-width: 2;
+    -fx-border-radius: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.talk-option:focused {
+    -fx-text-fill: #cb881d;
+}
+
