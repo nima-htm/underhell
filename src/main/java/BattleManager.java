@@ -77,7 +77,7 @@ public class BattleManager extends Application {
         });
 
         Rectangle playerHPBackground = new Rectangle();
-        playerHPBackground.setFill(Color.DARKRED);
+        playerHPBackground.setFill(Color.GREEN);
         playerHPBackground.widthProperty().bind(
                 player.getHp().divide(100.0).multiply(scene.widthProperty().multiply(0.25))
         );
