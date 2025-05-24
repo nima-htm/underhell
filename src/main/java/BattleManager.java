@@ -17,7 +17,9 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.control.ButtonType;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class BattleManager extends Application {
@@ -41,6 +43,8 @@ public class BattleManager extends Application {
     Button itemButton = new Button("ITEM");
     Button talkButton = new Button("TALK");
 
+
+    Alastor alastor = new Alastor(100);
     @Override
     public void start(Stage stage) {
 
@@ -103,6 +107,8 @@ public class BattleManager extends Application {
 
         villainImage.layoutXProperty().bind(scene.widthProperty().subtract(villainImage.fitWidthProperty()).subtract(120));
         villainImage.layoutYProperty().bind(scene.heightProperty().multiply(0.15));
+        alastor.setRoot(root);
+        alastor.setHeart(heart);
 
         fightButton.setPrefWidth(120);
         fightButton.setPrefHeight(50);
@@ -177,7 +183,7 @@ public class BattleManager extends Application {
             public void handle(long now) {
                 double x = heart.getTranslateX();
                 double y = heart.getTranslateY();
-                final double speed = 0.75; //this variable must change in different OS
+                final double speed = 2; //this variable must change in different OS
                 //if you are using Windows set it to 10
                 //if you have linux set it to 0.75
                 if (activeKeys.contains(KeyCode.A)) {
@@ -263,7 +269,10 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-            System.out.println("enemy attacks !");
+            for (int i = 0; i < 20; i++) {
+                alastor.throwSpear();
+            }
+
             PauseTransition backToPlayer = new PauseTransition(Duration.seconds(0.1));
             backToPlayer.setOnFinished(evt -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
