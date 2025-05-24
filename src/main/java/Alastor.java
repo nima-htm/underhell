@@ -1,4 +1,5 @@
 import javafx.animation.TranslateTransition;
+import javafx.geometry.Bounds;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
@@ -7,11 +8,16 @@ import javafx.util.Duration;
 
 import java.util.List;
 
-public class Alastor extends Villain{
-
+public class Alastor extends Villain {
 
     public Alastor(int hp) {
         super(hp);
+    }
+
+    private Player p;
+
+    public void setPlayer(Player p) {
+        this.p = p;
     }
 
     public void throwSpear() {
@@ -21,8 +27,9 @@ public class Alastor extends Villain{
                 10.0, 5.0,
                 0.0, 10.0
         );
+
         spear.setFill(Color.WHITE);
-        int randomNumberX = 50 + (int)(Math.random() * 801);
+        int randomNumberX = 50 + (int) (Math.random() * 801);
         spear.setLayoutX(randomNumberX);
         spear.setLayoutY(150);
 
@@ -32,13 +39,25 @@ public class Alastor extends Villain{
         spearMove.setToX(getHeart().getLayoutX() - spear.getLayoutX());
         spearMove.setToY(getHeart().getLayoutY() - spear.getLayoutY());
 
+
         spearMove.setOnFinished(e -> {
+            Bounds spearBounds = spear.localToScene(spear.getBoundsInLocal());
+            Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
+
+            if (spearBounds.intersects(heartBounds)) {
+                System.out.println("Spear hit the heart!");
+                p.getdmg(1);
+            } else {
+                System.out.println("Spear missed.");
+
+            }
             getRoot().getChildren().remove(spear);
-            System.out.println("Spear hit!");
         });
 
         spearMove.play();
     }
+
+
     @Override
     public int getHp() {
         return super.getHp();

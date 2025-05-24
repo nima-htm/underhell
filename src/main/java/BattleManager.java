@@ -1,7 +1,9 @@
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -24,8 +26,6 @@ import java.util.Set;
 
 public class BattleManager extends Application {
 
-
-    // Design vars
     private Rectangle battleBox;
     private Rectangle villainHPBar;
     private Rectangle playerHPBackground;
@@ -34,33 +34,17 @@ public class BattleManager extends Application {
     private Path heart;
     private Image villainImg;
     private ImageView villainImage;
-    //game state
     private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
-    //talk system
     private Button t_option1, t_option2, t_option3;
-
+    Player player = new Player("Mari", 100, 1);
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
     Button talkButton = new Button("TALK");
-
-
     Alastor alastor = new Alastor(100);
+
     @Override
     public void start(Stage stage) {
-
-        stage.setOnCloseRequest(event -> {
-            event.consume();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Save Game");
-            alert.setHeaderText("Do you want to save before exiting?");
-            alert.setContentText("Your progress will be saved.");
-            alert.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    // saveGame();
-                    stage.close();
-                }
-            });
-        });
+        alastor.setPlayer(player);
 
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
@@ -92,10 +76,11 @@ public class BattleManager extends Application {
             }
         });
 
-
         Rectangle playerHPBackground = new Rectangle();
         playerHPBackground.setFill(Color.DARKRED);
-        playerHPBackground.widthProperty().bind(scene.widthProperty().multiply(0.25));
+        playerHPBackground.widthProperty().bind(
+                player.getHp().divide(100.0).multiply(scene.widthProperty().multiply(0.25))
+        );
         playerHPBackground.setHeight(10);
         playerHPBackground.xProperty().bind(scene.widthProperty().subtract(playerHPBackground.widthProperty()).divide(2));
         playerHPBackground.yProperty().bind(Bindings.add(battleBox.yProperty(), battleBox.heightProperty()).add(40));
@@ -133,11 +118,10 @@ public class BattleManager extends Application {
             if (currentState != GameState.PLAYER_CHOICE_OPTIONS) return;
 
             currentState = GameState.PLAYER_CHOICE_TALK;
-            options_visibility(fightButton,talkButton,itemButton,false);
+            options_visibility(fightButton, talkButton, itemButton, false);
             talk_options_visibility(true);
         });
 
-        // Talk Options
         t_option1 = createTalkOption("Plead", scene, 0);
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
@@ -147,8 +131,8 @@ public class BattleManager extends Application {
 
 
         Rectangle dialogueBackground = new Rectangle();
-        dialogueBackground.widthProperty().bind(scene.widthProperty().multiply(0.15));  // half the previous width
-        dialogueBackground.heightProperty().bind(scene.heightProperty().multiply(0.2)); // double the previous height
+        dialogueBackground.widthProperty().bind(scene.widthProperty().multiply(0.15));
+        dialogueBackground.heightProperty().bind(scene.heightProperty().multiply(0.2));
         dialogueBackground.setFill(Color.rgb(0, 0, 0, 0.8));
         dialogueBackground.setArcWidth(20);
         dialogueBackground.setArcHeight(50);
@@ -166,7 +150,6 @@ public class BattleManager extends Application {
         dialogueBar.layoutYProperty().bind(scene.heightProperty().multiply(0.1));
         dialogueBar.setVisible(false);
 
-
         root.getChildren().addAll(
                 villainImage,
                 battleBox, heart, playerHPBackground, dialogueBar,
@@ -183,17 +166,15 @@ public class BattleManager extends Application {
             public void handle(long now) {
                 double x = heart.getTranslateX();
                 double y = heart.getTranslateY();
-                final double speed = 2; //this variable must change in different OS
-                //if you are using Windows set it to 10
-                //if you have linux set it to 0.75
+                final double speed = 2;
                 if (activeKeys.contains(KeyCode.A)) {
-                    moveHeart((-1)*speed, 0);
+                    moveHeart((-1) * speed, 0);
                 }
                 if (activeKeys.contains(KeyCode.D)) {
                     moveHeart(speed, 0);
                 }
                 if (activeKeys.contains(KeyCode.W)) {
-                    moveHeart(0, (-1)*speed);
+                    moveHeart(0, (-1) * speed);
                 }
                 if (activeKeys.contains(KeyCode.S)) {
                     moveHeart(0, speed);
@@ -205,23 +186,16 @@ public class BattleManager extends Application {
         stage.setTitle("Underhell Boss Fight");
         stage.setScene(scene);
         stage.show();
-    }
+        stage.show();
 
-    private void moveHeart(double dx, double dy) {
-        double newX = heart.getLayoutX() + dx;
-        double newY = heart.getLayoutY() + dy;
-        double minX = battleBox.getX();
-        double minY = battleBox.getY();
-        double maxX = battleBox.getX() + battleBox.getWidth();
-        double maxY = battleBox.getY() + battleBox.getHeight();
-        double heartWidth = heart.getBoundsInLocal().getWidth();
-        double heartHeight = heart.getBoundsInLocal().getHeight();
-        if (newX >= minX && newX + heartWidth <= maxX) {
-            heart.setLayoutX(newX);
-        }
-        if (newY >= minY && newY + heartHeight <= maxY) {
-            heart.setLayoutY(newY);
-        }
+        Platform.runLater(() -> {
+            Bounds bounds = battleBox.localToScene(battleBox.getBoundsInLocal());
+            double centerX = (bounds.getMinX() + bounds.getMaxX()) / 2;
+            double centerY = (bounds.getMinY() + bounds.getMaxY()) / 2;
+            heart.setLayoutX(centerX);
+            heart.setLayoutY(centerY);
+        });
+
     }
 
     private void showDialogue(String message) {
@@ -252,6 +226,23 @@ public class BattleManager extends Application {
         heart.setStrokeWidth(1);
         return heart;
     }
+
+    private void moveHeart(double dx, double dy) {
+        Bounds bounds = battleBox.localToScene(battleBox.getBoundsInLocal());
+
+        double newX = heart.getLayoutX() + dx;
+        double newY = heart.getLayoutY() + dy;
+        double heartWidth = heart.getBoundsInLocal().getWidth();
+        double heartHeight = heart.getBoundsInLocal().getHeight();
+
+        if (newX >= bounds.getMinX() && newX + heartWidth <= bounds.getMaxX()) {
+            heart.setLayoutX(newX);
+        }
+        if (newY >= bounds.getMinY() && newY + heartHeight <= bounds.getMaxY()) {
+            heart.setLayoutY(newY);
+        }
+    }
+
     private Button createTalkOption(String text, Scene scene, int index) {
         Button btn = new Button(text);
         btn.setPrefSize(200, 40);
@@ -263,6 +254,7 @@ public class BattleManager extends Application {
         btn.layoutYProperty().bind(battleBox.yProperty().add(30 + index * 50));
         return btn;
     }
+
     private void handlePlayerChoice(String message) {
         talk_options_visibility(false);
         showDialogue(message);
@@ -276,18 +268,20 @@ public class BattleManager extends Application {
             PauseTransition backToPlayer = new PauseTransition(Duration.seconds(0.1));
             backToPlayer.setOnFinished(evt -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
-                options_visibility(fightButton,talkButton,itemButton,true);
+                options_visibility(fightButton, talkButton, itemButton, true);
             });
             backToPlayer.play();
         });
         pause.play();
     }
+
     private void talk_options_visibility(boolean isVisible) {
         t_option1.setVisible(isVisible);
         t_option2.setVisible(isVisible);
         t_option3.setVisible(isVisible);
     }
-    private void options_visibility(Button f,Button t, Button i,boolean isVisible) {
+
+    private void options_visibility(Button f, Button t, Button i, boolean isVisible) {
         f.setVisible(isVisible);
         t.setVisible(isVisible);
         i.setVisible(isVisible);
