@@ -53,7 +53,6 @@ public class BattleManager extends Application {
         stage.setMaximized(true);
         stage.setResizable(false);
 
-
         battleBox = new Rectangle(500, 300);
         battleBox.setStroke(Color.WHITE);
         battleBox.setStrokeWidth(2);
