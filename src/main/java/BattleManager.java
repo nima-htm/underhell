@@ -85,6 +85,15 @@ public class BattleManager extends Application {
         playerHPBackground.xProperty().bind(scene.widthProperty().subtract(playerHPBackground.widthProperty()).divide(2));
         playerHPBackground.yProperty().bind(Bindings.add(battleBox.yProperty(), battleBox.heightProperty()).add(40));
 
+        Rectangle playerHPFrame = new Rectangle();
+        playerHPFrame.setWidth(380); // fixed size, can match max HP width
+        playerHPFrame.setHeight(10);
+        playerHPFrame.setStroke(Color.WHITE);
+        playerHPFrame.setFill(Color.TRANSPARENT);
+        playerHPFrame.setStrokeWidth(2);
+        playerHPFrame.xProperty().bind(scene.widthProperty().subtract(playerHPFrame.getWidth()).divide(2));
+        playerHPFrame.yProperty().bind(Bindings.add(battleBox.yProperty(), battleBox.heightProperty()).add(40));
+
         villainImg = new Image(getClass().getResource("/villain.png").toExternalForm());
         villainImage = new ImageView(villainImg);
         villainImage.setFitWidth(300);
@@ -152,7 +161,7 @@ public class BattleManager extends Application {
 
         root.getChildren().addAll(
                 villainImage,
-                battleBox, heart, playerHPBackground, dialogueBar,
+                battleBox, heart, playerHPBackground, dialogueBar,playerHPFrame,
                 fightButton, itemButton, talkButton,
                 t_option1, t_option2, t_option3
         );
