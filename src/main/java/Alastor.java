@@ -46,7 +46,7 @@ public class Alastor extends Villain {
 
             if (spearBounds.intersects(heartBounds)) {
                 System.out.println("Spear hit the heart!");
-                p.getdmg(1);
+                p.getdmg(10);
             } else {
                 System.out.println("Spear missed.");
 
