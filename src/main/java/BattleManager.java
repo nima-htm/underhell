@@ -1,5 +1,7 @@
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -45,7 +47,6 @@ public class BattleManager extends Application {
     @Override
     public void start(Stage stage) {
         alastor.setPlayer(player);
-
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
         Scene scene = new Scene(root, 500, 450, Color.BLUE);
@@ -260,16 +261,20 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
+
+            // Create a timeline for throwing spears with delay
+            Timeline spearAttack = new Timeline();
             for (int i = 0; i < 20; i++) {
-                alastor.throwSpear();
+                KeyFrame keyFrame = new KeyFrame(Duration.seconds(i * 1), e -> alastor.throwSpear());
+                spearAttack.getKeyFrames().add(keyFrame);
             }
 
-            PauseTransition backToPlayer = new PauseTransition(Duration.seconds(0.1));
-            backToPlayer.setOnFinished(evt -> {
+            spearAttack.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
             });
-            backToPlayer.play();
+
+            spearAttack.play();
         });
         pause.play();
     }
