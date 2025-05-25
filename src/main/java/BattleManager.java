@@ -100,7 +100,6 @@ public class BattleManager extends Application {
         playerHPFrame.xProperty().bind(scene.widthProperty().subtract(playerHPFrame.getWidth()).divide(2));
         playerHPFrame.yProperty().bind(Bindings.add(battleBox.yProperty(), battleBox.heightProperty()).add(40));
 
-
         playerNameText.setFill(Color.WHITE);
         playerNameText.getStyleClass().add("player-info");
         playerNameText.yProperty().bind(playerHPFrame.yProperty().add(10)); // align vertically
@@ -109,7 +108,6 @@ public class BattleManager extends Application {
         playerLevelText.getStyleClass().add("player-info");
         playerLevelText.yProperty().bind(playerHPFrame.yProperty().add(10)); // align vertically
         playerLevelText.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(20)); // right side with spacing
-
 
 
         villainImg = new Image(getClass().getResource("/villain.png").toExternalForm());
