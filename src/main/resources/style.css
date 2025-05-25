@@ -44,3 +44,8 @@
     -fx-text-fill: #cb881d;
 }
 
+.game-label {
+    -fx-font-size: 14px;
+    -fx-font-family: "Consolas";
+    -fx-font-weight: bold;
+}

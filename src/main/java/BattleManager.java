@@ -18,6 +18,8 @@ import javafx.scene.shape.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,6 +34,7 @@ public class BattleManager extends Application {
     private ImageView villainImage;
     private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
     private Button t_option1, t_option2, t_option3;
+    private Button heal;
     Player player = new Player("Mari", 100, 1);
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
@@ -41,12 +44,20 @@ public class BattleManager extends Application {
     @Override
     public void start(Stage stage) {
         alastor.setPlayer(player);
+        Item healpotion = new Item(player);
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
         Scene scene = new Scene(root, 500, 450, Color.BLUE);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setMaximized(true);
         stage.setResizable(false);
+        Text playerNameText = new Text(player.getName());
+        playerNameText.setFill(Color.WHITE);
+        playerNameText.getStyleClass().add("game-label");
+
+        Text playerLevelText = new Text("Lv. " + player.getLevel());
+        playerLevelText.setFill(Color.WHITE);
+        playerLevelText.getStyleClass().add("game-label");
 
         battleBox = new Rectangle(500, 300);
         battleBox.setStroke(Color.WHITE);
@@ -60,7 +71,7 @@ public class BattleManager extends Application {
         heart.setLayoutY(scene.getHeight() / 2);
 
         scene.widthProperty().addListener((obs, oldVal, newVal) -> {
-            if (!heart.isPressed()) { // if you want to control when to update
+            if (!heart.isPressed()) {
                 heart.setLayoutX(newVal.doubleValue() / 2);
             }
         });
@@ -69,6 +80,7 @@ public class BattleManager extends Application {
                 heart.setLayoutY(newVal.doubleValue() / 2);
             }
         });
+
 
         Rectangle playerHPBackground = new Rectangle();
         playerHPBackground.setFill(Color.GREEN);
@@ -80,7 +92,7 @@ public class BattleManager extends Application {
         playerHPBackground.yProperty().bind(Bindings.add(battleBox.yProperty(), battleBox.heightProperty()).add(40));
 
         Rectangle playerHPFrame = new Rectangle();
-        playerHPFrame.setWidth(320); // fixed size, can match max HP width
+        playerHPFrame.setWidth(320);
         playerHPFrame.setHeight(10);
         playerHPFrame.setStroke(Color.WHITE);
         playerHPFrame.setFill(Color.TRANSPARENT);
@@ -88,11 +100,22 @@ public class BattleManager extends Application {
         playerHPFrame.xProperty().bind(scene.widthProperty().subtract(playerHPFrame.getWidth()).divide(2));
         playerHPFrame.yProperty().bind(Bindings.add(battleBox.yProperty(), battleBox.heightProperty()).add(40));
 
+
+        playerNameText.setFill(Color.WHITE);
+        playerNameText.getStyleClass().add("player-info");
+        playerNameText.yProperty().bind(playerHPFrame.yProperty().add(10)); // align vertically
+        playerNameText.xProperty().bind(playerHPFrame.xProperty().subtract(60)); // left side with spacing
+        playerLevelText.setFill(Color.WHITE);
+        playerLevelText.getStyleClass().add("player-info");
+        playerLevelText.yProperty().bind(playerHPFrame.yProperty().add(10)); // align vertically
+        playerLevelText.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(20)); // right side with spacing
+
+
+
         villainImg = new Image(getClass().getResource("/villain.png").toExternalForm());
         villainImage = new ImageView(villainImg);
         villainImage.setFitWidth(300);
         villainImage.setFitHeight(300);
-
         villainImage.layoutXProperty().bind(scene.widthProperty().subtract(villainImage.fitWidthProperty()).subtract(120));
         villainImage.layoutYProperty().bind(scene.heightProperty().multiply(0.15));
         alastor.setRoot(root);
@@ -117,17 +140,33 @@ public class BattleManager extends Application {
         fightButton.getStyleClass().add("game-button");
         itemButton.getStyleClass().add("game-button");
         talkButton.getStyleClass().add("game-button");
-        talkButton.setOnAction(e -> {
-            if (currentState != GameState.PLAYER_CHOICE_OPTIONS) return;
 
-            currentState = GameState.PLAYER_CHOICE_TALK;
-            options_visibility(fightButton, talkButton, itemButton, false);
-            talk_options_visibility(true);
+        itemButton.setOnAction(e -> {
+            if (currentState == GameState.ENEMY_TURN) return; // Only block during enemy turn
+            currentState = GameState.PLAYER_CHOICE_ITEM;
+            options_visibility(fightButton, talkButton, itemButton, true); // keep all visible
+            item_options_visibility(true);
+            talk_options_visibility(false); // just in case
         });
+
+
+        talkButton.setOnAction(e -> {
+            if (currentState == GameState.ENEMY_TURN) return;
+            currentState = GameState.PLAYER_CHOICE_TALK;
+            options_visibility(fightButton, talkButton, itemButton, true);
+            talk_options_visibility(true);
+            item_options_visibility(false);
+        });
+
 
         t_option1 = createTalkOption("Plead", scene, 0);
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
+        heal = createTalkOption("Heal", scene, 1);
+        heal.setOnAction(e -> {
+            healpotion.hpUp();
+            handlePlayerChoice2();
+        });
         t_option1.setOnAction(e -> handlePlayerChoice("You plead. The villain chuckles."));
         t_option2.setOnAction(e -> handlePlayerChoice("You insult the villain. Its eyes glow red."));
         t_option3.setOnAction(e -> handlePlayerChoice("You stay silent. The air grows heavy."));
@@ -155,8 +194,8 @@ public class BattleManager extends Application {
 
         root.getChildren().addAll(
                 villainImage,
-                battleBox, heart, playerHPBackground, dialogueBar,playerHPFrame,
-                fightButton, itemButton, talkButton,
+                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame,
+                fightButton, itemButton, talkButton, heal,playerNameText, playerLevelText,
                 t_option1, t_option2, t_option3
         );
 
@@ -265,7 +304,6 @@ public class BattleManager extends Application {
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
 
-            // Create a timeline for throwing spears with delay
             Timeline spearAttack = new Timeline();
             for (int i = 0; i < 20; i++) {
                 KeyFrame keyFrame = new KeyFrame(Duration.seconds(i * 1), e -> alastor.throwSpear());
@@ -288,12 +326,24 @@ public class BattleManager extends Application {
         t_option3.setVisible(isVisible);
     }
 
+    private void item_options_visibility(boolean isVisible) {
+        heal.setVisible(isVisible);
+    }
+
     private void options_visibility(Button f, Button t, Button i, boolean isVisible) {
         f.setVisible(isVisible);
         t.setVisible(isVisible);
         i.setVisible(isVisible);
     }
 
+    private void handlePlayerChoice2() {
+        item_options_visibility(false);
+        currentState = GameState.PLAYER_CHOICE_OPTIONS;
+        options_visibility(fightButton, talkButton, itemButton, true);
+        PauseTransition pause = new PauseTransition(Duration.seconds(2));
+        pause.setOnFinished(ev -> dialogueBar.setVisible(false));
+        pause.play();
+    }
 
     public static void main(String[] args) {
         launch(args);
