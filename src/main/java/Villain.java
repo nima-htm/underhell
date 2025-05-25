@@ -1,8 +1,5 @@
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Path;
-import javafx.scene.shape.Shape;
-
-import java.util.List;
 
 public class Villain {
 

@@ -7,7 +7,6 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Bounds;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -19,17 +18,12 @@ import javafx.scene.shape.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.scene.control.ButtonType;
-
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class BattleManager extends Application {
 
     private Rectangle battleBox;
-    private Rectangle villainHPBar;
     private Rectangle playerHPBackground;
     private Pane dialogueBar;
     private Text dialogueText;
@@ -86,7 +80,7 @@ public class BattleManager extends Application {
         playerHPBackground.yProperty().bind(Bindings.add(battleBox.yProperty(), battleBox.heightProperty()).add(40));
 
         Rectangle playerHPFrame = new Rectangle();
-        playerHPFrame.setWidth(380); // fixed size, can match max HP width
+        playerHPFrame.setWidth(320); // fixed size, can match max HP width
         playerHPFrame.setHeight(10);
         playerHPFrame.setStroke(Color.WHITE);
         playerHPFrame.setFill(Color.TRANSPARENT);

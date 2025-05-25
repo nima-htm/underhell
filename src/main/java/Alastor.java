@@ -1,11 +1,8 @@
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Bounds;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
-import javafx.scene.shape.Polygon;
 import javafx.util.Duration;
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -26,35 +23,16 @@ public class Alastor extends Villain {
         this.p = p;
     }
 
-    public void startThrowingSpears() {
-        if (spearTimeline != null) {
-            spearTimeline.stop();
-        }
-        spearTimeline = new Timeline(
-            new KeyFrame(Duration.seconds(2), e -> throwSpear())
-        );
-        spearTimeline.setCycleCount(Timeline.INDEFINITE);
-        spearTimeline.play();
-    }
-
-    public void stopThrowingSpears() {
-        if (spearTimeline != null) {
-            spearTimeline.stop();
-        }
-    }
-
-    // Removed @Override because throwSpear is not in Villain
     public void throwSpear() {
         Image spearImg;
         try {
             spearImg = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/spear.png")));
         } catch (Exception e) {
-            // fallback: don't throw if image not found
             return;
         }
         ImageView spear = new ImageView(spearImg);
-        spear.setFitWidth(90);  // Increased from 30 to 60
-        spear.setFitHeight(40.); // Increased from 10 to 20
+        spear.setFitWidth(90);
+        spear.setFitHeight(40.);
         int randomNumberX = 50 + (int) (Math.random() * 801);
         spear.setLayoutX(randomNumberX);
         spear.setLayoutY(150);
