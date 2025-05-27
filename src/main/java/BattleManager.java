@@ -334,14 +334,6 @@ public class BattleManager extends Application {
         i.setVisible(isVisible);
     }
 
-    private void handlePlayerChoice2() {
-        item_options_visibility(false);
-        currentState = GameState.PLAYER_CHOICE_OPTIONS;
-        options_visibility(fightButton, talkButton, itemButton, true);
-        PauseTransition pause = new PauseTransition(Duration.seconds(2));
-        pause.setOnFinished(ev -> dialogueBar.setVisible(false));
-        pause.play();
-    }
     private void handlePlayerChoice3(String message) {
         item_options_visibility(false);
         showDialogue(message);
