@@ -322,6 +322,7 @@ public class BattleManager extends Application {
 
     private void handlePlayerChoice(String message) {
         talk_options_visibility(false);
+        item_options_visibility(false);
         options_visibility(fightButton, talkButton, itemButton, false);
         showDialogue(message);
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
