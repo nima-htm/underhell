@@ -2,6 +2,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Bounds;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -67,14 +68,12 @@ public class Alastor extends Villain {
 
         spearMove.play();
     }
-    public void Laser(Rectangle battleBox, Pane root,Player p) {
+
+    public void Laser(Rectangle battleBox, Pane root, Player p) {
         Random rand = new Random();
-        int numberOfLasers = 20;
-        double delayBetweenLasers = 0.6; // reduced delay (0.3 seconds)
-
+        int numberOfLasers = 30;
+        double delayBetweenLasers = 0.6;
         Timeline timeline = new Timeline();
-
-        // Get battleBox bounds in scene coordinates
         Bounds bounds = battleBox.localToScene(battleBox.getBoundsInLocal());
         double boxX = bounds.getMinX();
         double boxY = bounds.getMinY();
@@ -82,7 +81,7 @@ public class Alastor extends Villain {
         double boxHeight = bounds.getHeight();
 
         for (int i = 0; i < numberOfLasers; i++) {
-            double delay = (i == 0) ? 1 : i * delayBetweenLasers; // first laser immediately
+            double delay = (i == 0) ? 1 : i * delayBetweenLasers;
 
             KeyFrame kf = new KeyFrame(Duration.seconds(delay), event -> {
                 Line laser = new Line();
@@ -102,30 +101,35 @@ public class Alastor extends Villain {
                     laser.setEndY(boxY + boxHeight);
                 }
 
-                laser.setStroke(Color.DARKRED);
+                laser.setStroke(Color.BLUE);
                 laser.setStrokeWidth(8);
-
+                DropShadow glow = new DropShadow();
+                glow.setColor(Color.BLUE);
+                glow.setRadius(20);
+                laser.setEffect(glow);
                 root.getChildren().add(laser);
-//                Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
-//                Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
-//
-//                if (laserBounds.intersects(heartBounds)) {
-//                    p.getdmg(20);  // or whatever your damage method is
-//                    root.getChildren().remove(laser);
-//                    return; // stop further actions for this laser
-//                }
-                Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
-                Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
 
-                if (laserBounds.intersects(heartBounds)) {
-                    Shape intersection = Shape.intersect(laser, getHeart());
-                    if (intersection.getBoundsInLocal().getWidth() != -1) {
-                        System.out.println("Laser hit the heart!");
-                        p.getdmg(10);
-                       // root.getChildren().remove(laser);
-                        // stop or remove laser animation here
+
+                PauseTransition collisionDelay = new PauseTransition(Duration.seconds(1));
+                collisionDelay.setOnFinished(e -> {
+                    laser.setStroke(Color.RED);
+                    DropShadow glow0 = new DropShadow();
+                    glow.setColor(Color.DARKRED);
+                    glow.setRadius(20);
+                    laser.setEffect(glow0);
+                    Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
+                    Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
+
+                    if (laserBounds.intersects(heartBounds)) {
+                        Shape intersection = Shape.intersect(laser, getHeart());
+                        if (intersection.getBoundsInLocal().getWidth() != -1) {
+                            System.out.println("Laser hit the heart!");
+                            p.getdmg(20);
+                        }
                     }
-                }
+                });
+                collisionDelay.play();
+
 
                 PauseTransition pt = new PauseTransition(Duration.seconds(1.5));
                 pt.setOnFinished(e -> root.getChildren().remove(laser));
@@ -135,7 +139,6 @@ public class Alastor extends Villain {
         }
         timeline.play();
     }
-
 
 
     @Override
