@@ -21,6 +21,7 @@ import javafx.util.Duration;
 
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 public class BattleManager extends Application {
@@ -102,12 +103,12 @@ public class BattleManager extends Application {
 
         playerNameText.setFill(Color.WHITE);
         playerNameText.getStyleClass().add("player-info");
-        playerNameText.yProperty().bind(playerHPFrame.yProperty().add(10)); // align vertically
-        playerNameText.xProperty().bind(playerHPFrame.xProperty().subtract(60)); // left side with spacing
+        playerNameText.yProperty().bind(playerHPFrame.yProperty().add(10));
+        playerNameText.xProperty().bind(playerHPFrame.xProperty().subtract(60));
         playerLevelText.setFill(Color.WHITE);
         playerLevelText.getStyleClass().add("player-info");
-        playerLevelText.yProperty().bind(playerHPFrame.yProperty().add(10)); // align vertically
-        playerLevelText.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(20)); // right side with spacing
+        playerLevelText.yProperty().bind(playerHPFrame.yProperty().add(10));
+        playerLevelText.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(20));
 
 
         villainImg = new Image(getClass().getResource("/villain.png").toExternalForm());
@@ -140,11 +141,11 @@ public class BattleManager extends Application {
         talkButton.getStyleClass().add("game-button");
 
         itemButton.setOnAction(e -> {
-            if (currentState == GameState.ENEMY_TURN) return; // Only block during enemy turn
+            if (currentState == GameState.ENEMY_TURN) return;
             currentState = GameState.PLAYER_CHOICE_ITEM;
-            options_visibility(fightButton, talkButton, itemButton, false); // keep all visible
+            options_visibility(fightButton, talkButton, itemButton, false);
             item_options_visibility(true);
-            talk_options_visibility(false); // just in case
+            talk_options_visibility(false);
         });
 
 
@@ -163,14 +164,37 @@ public class BattleManager extends Application {
         heal = createTalkOption("Heal", scene, 1);
         heal.setOnAction(e -> {
             healpotion.hpUp();
-            handlePlayerChoice(battleBox,root,player,"Useless~");
-            //handlePlayerChoiceItem("now it's my turn");
+            Random r = new Random();
+            int random = r.nextInt(2);
+            if (random % 2 == 0)
+                handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
+            else
+                handlePlayerChoice("Useless~");
         });
-        t_option1.setOnAction(e -> handlePlayerChoice("You plead. The villain chuckles."));
-        t_option2.setOnAction(e -> handlePlayerChoice("You insult the villain. Its eyes glow red."));
-        t_option3.setOnAction(e -> handlePlayerChoice("You stay silent. The air grows heavy."));
-
-
+        t_option1.setOnAction(e -> {
+            Random r = new Random();
+            int random = r.nextInt(2);
+            if (random % 2 == 0)
+                handlePlayerChoiceTwo(battleBox, root, player, "You plead. The villain chuckles.");
+            else
+                handlePlayerChoice("You plead. The villain chuckles.");
+        });
+        t_option2.setOnAction(e -> {
+            Random r = new Random();
+            int random = r.nextInt(2);
+            if (random % 2 == 0)
+                handlePlayerChoiceTwo(battleBox, root, player, "You insult the villain. Its eyes glow red.");
+            else
+                handlePlayerChoice("You insult the villain. Its eyes glow red.");
+        });
+        t_option3.setOnAction(e -> {
+            Random r = new Random();
+            int random = r.nextInt(2);
+            if (random % 2 == 0)
+                handlePlayerChoiceTwo(battleBox, root, player, "You stay silent. The air grows heavy.");
+            else
+                handlePlayerChoice("You stay silent. The air grows heavy.");
+        });
         Rectangle dialogueBackground = new Rectangle();
         dialogueBackground.widthProperty().bind(scene.widthProperty().multiply(0.15));
         dialogueBackground.heightProperty().bind(scene.heightProperty().multiply(0.2));
@@ -194,7 +218,7 @@ public class BattleManager extends Application {
         root.getChildren().addAll(
                 villainImage,
                 battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame,
-                fightButton, itemButton, talkButton, heal,playerNameText, playerLevelText,
+                fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText,
                 t_option1, t_option2, t_option3
         );
 
@@ -298,6 +322,7 @@ public class BattleManager extends Application {
 
     private void handlePlayerChoice(String message) {
         talk_options_visibility(false);
+        options_visibility(fightButton, talkButton, itemButton, false);
         showDialogue(message);
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
         pause.setOnFinished(ev -> {
@@ -335,36 +360,15 @@ public class BattleManager extends Application {
         i.setVisible(isVisible);
     }
 
-    private void handlePlayerChoiceItem(String message) {
-        item_options_visibility(false);
-        showDialogue(message);
-        PauseTransition pause = new PauseTransition(Duration.seconds(3));
-        pause.setOnFinished(ev -> {
-            currentState = GameState.ENEMY_TURN;
-
-            Timeline spearAttack = new Timeline();
-            for (int i = 0; i < 20; i++) {
-                KeyFrame keyFrame = new KeyFrame(Duration.seconds(i * 1), e -> alastor.throwSpear());
-                spearAttack.getKeyFrames().add(keyFrame);
-            }
-
-            spearAttack.setOnFinished(e -> {
-                currentState = GameState.PLAYER_CHOICE_OPTIONS;
-                options_visibility(fightButton, talkButton, itemButton, true);
-            });
-
-            spearAttack.play();
-        });
-        pause.play();
-    }
-    private void handlePlayerChoice(Rectangle r, Pane p,Player P,String s) {
+    private void handlePlayerChoiceTwo(Rectangle r, Pane p, Player P, String s) {
+        talk_options_visibility(false);
         options_visibility(fightButton, talkButton, itemButton, false);
         showDialogue(s);
         item_options_visibility(false);
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-            alastor.Laser(r,p,P);
+            alastor.Laser(r, p, P);
             PauseTransition resume = new PauseTransition(Duration.seconds(19)); // Adjust as needed
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
