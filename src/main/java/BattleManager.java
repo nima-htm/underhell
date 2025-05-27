@@ -206,7 +206,7 @@ public class BattleManager extends Application {
             public void handle(long now) {
                 double x = heart.getTranslateX();
                 double y = heart.getTranslateY();
-                final double speed = 2;
+                final double speed = 10;
                 if (activeKeys.contains(KeyCode.A)) {
                     moveHeart((-1) * speed, 0);
                 }
