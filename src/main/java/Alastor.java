@@ -7,7 +7,6 @@ import javafx.animation.Timeline;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import java.util.List;
 import java.util.Objects;
 
 public class Alastor extends Villain {
@@ -17,7 +16,6 @@ public class Alastor extends Villain {
     }
 
     private Player p;
-    private Timeline spearTimeline;
 
     public void setPlayer(Player p) {
         this.p = p;
@@ -37,20 +35,29 @@ public class Alastor extends Villain {
         spear.setLayoutX(randomNumberX);
         spear.setLayoutY(150);
         getRoot().getChildren().add(spear);
+
         TranslateTransition spearMove = new TranslateTransition(Duration.seconds(1.5), spear);
         spearMove.setToX(getHeart().getLayoutX() - spear.getLayoutX());
         spearMove.setToY(getHeart().getLayoutY() - spear.getLayoutY());
-        spearMove.setOnFinished(e -> {
+
+        spearMove.currentTimeProperty().addListener((ignored, ignoredOld, ignoredNew) -> {
             Bounds spearBounds = spear.localToScene(spear.getBoundsInLocal());
             Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
             if (spearBounds.intersects(heartBounds)) {
                 System.out.println("Spear hit the heart!");
                 p.getdmg(10);
-            } else {
-                System.out.println("Spear missed.");
+                getRoot().getChildren().remove(spear);
+                spearMove.stop();
             }
-            getRoot().getChildren().remove(spear);
         });
+
+        spearMove.setOnFinished(ignored -> {
+            if (getRoot().getChildren().contains(spear)) {
+                System.out.println("Spear missed.");
+                getRoot().getChildren().remove(spear);
+            }
+        });
+
         spearMove.play();
     }
 
