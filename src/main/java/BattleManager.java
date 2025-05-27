@@ -163,7 +163,7 @@ public class BattleManager extends Application {
         heal = createTalkOption("Heal", scene, 1);
         heal.setOnAction(e -> {
             healpotion.hpUp();
-            handlePlayerChoice(battleBox,root,player);
+            handlePlayerChoice(battleBox,root,player,"Useless~");
             //handlePlayerChoiceItem("now it's my turn");
         });
         t_option1.setOnAction(e -> handlePlayerChoice("You plead. The villain chuckles."));
@@ -357,16 +357,21 @@ public class BattleManager extends Application {
         });
         pause.play();
     }
-    private void handlePlayerChoice(Rectangle r, Pane p,Player P) {
-        options_visibility(fightButton, talkButton, itemButton, true);
+    private void handlePlayerChoice(Rectangle r, Pane p,Player P,String s) {
+        options_visibility(fightButton, talkButton, itemButton, false);
+        showDialogue(s);
         item_options_visibility(false);
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-
             alastor.Laser(r,p,P);
+            PauseTransition resume = new PauseTransition(Duration.seconds(19)); // Adjust as needed
+            resume.setOnFinished(e -> {
+                currentState = GameState.PLAYER_CHOICE_OPTIONS;
+                options_visibility(fightButton, talkButton, itemButton, true);
+            });
+            resume.play();
         });
-
         pause.play();
     }
 

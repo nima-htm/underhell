@@ -13,7 +13,6 @@ import javafx.util.Duration;
 import javafx.animation.Timeline;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 import java.util.Objects;
 import java.util.Random;
 
