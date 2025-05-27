@@ -61,7 +61,7 @@ public class BattleManager extends Application {
 
         battleBox = new Rectangle(500, 300);
         battleBox.setStroke(Color.WHITE);
-        battleBox.setStrokeWidth(2);
+        battleBox.setStrokeWidth(3);
 
         battleBox.xProperty().bind(scene.widthProperty().subtract(battleBox.widthProperty()).divide(4));
         battleBox.yProperty().bind(scene.heightProperty().subtract(battleBox.heightProperty()).divide(2).subtract(40));
@@ -163,7 +163,8 @@ public class BattleManager extends Application {
         heal = createTalkOption("Heal", scene, 1);
         heal.setOnAction(e -> {
             healpotion.hpUp();
-            handlePlayerChoice3("now it's my turn");
+            handlePlayerChoice(battleBox,root,player);
+            //handlePlayerChoiceItem("now it's my turn");
         });
         t_option1.setOnAction(e -> handlePlayerChoice("You plead. The villain chuckles."));
         t_option2.setOnAction(e -> handlePlayerChoice("You insult the villain. Its eyes glow red."));
@@ -334,7 +335,7 @@ public class BattleManager extends Application {
         i.setVisible(isVisible);
     }
 
-    private void handlePlayerChoice3(String message) {
+    private void handlePlayerChoiceItem(String message) {
         item_options_visibility(false);
         showDialogue(message);
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
@@ -354,6 +355,18 @@ public class BattleManager extends Application {
 
             spearAttack.play();
         });
+        pause.play();
+    }
+    private void handlePlayerChoice(Rectangle r, Pane p,Player P) {
+        options_visibility(fightButton, talkButton, itemButton, true);
+        item_options_visibility(false);
+        PauseTransition pause = new PauseTransition(Duration.seconds(2));
+        pause.setOnFinished(ev -> {
+            currentState = GameState.ENEMY_TURN;
+
+            alastor.Laser(r,p,P);
+        });
+
         pause.play();
     }
 
