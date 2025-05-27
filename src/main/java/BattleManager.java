@@ -142,7 +142,7 @@ public class BattleManager extends Application {
         itemButton.setOnAction(e -> {
             if (currentState == GameState.ENEMY_TURN) return; // Only block during enemy turn
             currentState = GameState.PLAYER_CHOICE_ITEM;
-            options_visibility(fightButton, talkButton, itemButton, true); // keep all visible
+            options_visibility(fightButton, talkButton, itemButton, false); // keep all visible
             item_options_visibility(true);
             talk_options_visibility(false); // just in case
         });
@@ -151,7 +151,7 @@ public class BattleManager extends Application {
         talkButton.setOnAction(e -> {
             if (currentState == GameState.ENEMY_TURN) return;
             currentState = GameState.PLAYER_CHOICE_TALK;
-            options_visibility(fightButton, talkButton, itemButton, true);
+            options_visibility(fightButton, talkButton, itemButton, false);
             talk_options_visibility(true);
             item_options_visibility(false);
         });
@@ -163,7 +163,7 @@ public class BattleManager extends Application {
         heal = createTalkOption("Heal", scene, 1);
         heal.setOnAction(e -> {
             healpotion.hpUp();
-            handlePlayerChoice2();
+            handlePlayerChoice3("now it's my turn");
         });
         t_option1.setOnAction(e -> handlePlayerChoice("You plead. The villain chuckles."));
         t_option2.setOnAction(e -> handlePlayerChoice("You insult the villain. Its eyes glow red."));
@@ -340,6 +340,28 @@ public class BattleManager extends Application {
         options_visibility(fightButton, talkButton, itemButton, true);
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> dialogueBar.setVisible(false));
+        pause.play();
+    }
+    private void handlePlayerChoice3(String message) {
+        item_options_visibility(false);
+        showDialogue(message);
+        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        pause.setOnFinished(ev -> {
+            currentState = GameState.ENEMY_TURN;
+
+            Timeline spearAttack = new Timeline();
+            for (int i = 0; i < 20; i++) {
+                KeyFrame keyFrame = new KeyFrame(Duration.seconds(i * 1), e -> alastor.throwSpear());
+                spearAttack.getKeyFrames().add(keyFrame);
+            }
+
+            spearAttack.setOnFinished(e -> {
+                currentState = GameState.PLAYER_CHOICE_OPTIONS;
+                options_visibility(fightButton, talkButton, itemButton, true);
+            });
+
+            spearAttack.play();
+        });
         pause.play();
     }
 
