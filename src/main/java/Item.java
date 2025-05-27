@@ -11,6 +11,5 @@ public class Item {
         } else if (player.gethp() <= 80 && player.gethp() > 0) {
             player.setHp(player.gethp() + 20);
         }
-
     }
 }
