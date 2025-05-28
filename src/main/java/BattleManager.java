@@ -26,6 +26,7 @@ import java.util.Set;
 
 public class BattleManager extends Application {
 
+    Random random = new Random();
     private Rectangle battleBox;
     private Rectangle playerHPBackground;
     private Pane dialogueBar;
@@ -231,7 +232,7 @@ public class BattleManager extends Application {
             public void handle(long now) {
                 double x = heart.getTranslateX();
                 double y = heart.getTranslateY();
-                final double speed = 10;
+                final double speed = 1;
                 if (activeKeys.contains(KeyCode.A)) {
                     moveHeart((-1) * speed, 0);
                 }
@@ -328,19 +329,14 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-
-            Timeline spearAttack = new Timeline();
-            for (int i = 0; i < 20; i++) {
-                KeyFrame keyFrame = new KeyFrame(Duration.seconds(i * 1), e -> alastor.throwSpear());
-                spearAttack.getKeyFrames().add(keyFrame);
-            }
-
-            spearAttack.setOnFinished(e -> {
+            alastor.throwSpearAll();
+            PauseTransition resume = new PauseTransition(Duration.seconds(11));
+            resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
             });
 
-            spearAttack.play();
+            resume.play();
         });
         pause.play();
     }
@@ -369,8 +365,20 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-            alastor.Laser(r, p, P);
-            PauseTransition resume = new PauseTransition(Duration.seconds(19)); // Adjust as needed
+            int choice = random.nextInt(2);
+            int sd = switch (choice) {
+                case 0 -> {
+                    alastor.throwSpearAll();
+                    yield 10;
+                }
+                case 1 -> {
+                    alastor.Laser(r, p, P);
+                    yield 19;
+                }
+                default -> 1;
+            };
+
+            PauseTransition resume = new PauseTransition(Duration.seconds(sd)); // Adjust as needed
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
