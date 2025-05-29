@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -141,6 +142,25 @@ public class BattleManager extends Application {
         itemButton.getStyleClass().add("game-button");
         talkButton.getStyleClass().add("game-button");
 
+        fightButton.setOnAction(e -> {
+            if (currentState != GameState.PLAYER_CHOICE_OPTIONS) return;
+            currentState = GameState.PLAYER_CHOICE_FIGHT;
+            options_visibility(fightButton, talkButton, itemButton, false);
+            ArrayList<Integer> damages = Damages();
+            int[] villainHP = {alastor.getHp()};
+            final Pane[] bossFightPane = new Pane[1];
+            bossFightPane[0] = BossFight(() -> {
+                alastor.setHp(villainHP[0]);
+                currentState = GameState.ENEMY_TURN;
+                handlePlayerChoiceTwo(battleBox, root, player, "Ahh, that hurts, you gotta pay for that!");
+                ((Pane) fightButton.getScene().getRoot()).getChildren().remove(bossFightPane[0]);
+            }, villainHP, damages);
+
+            ((Pane) fightButton.getScene().getRoot()).getChildren().add(bossFightPane[0]);
+            bossFightPane[0].requestFocus();
+        });
+
+
         itemButton.setOnAction(e -> {
             if (currentState == GameState.ENEMY_TURN) return;
             currentState = GameState.PLAYER_CHOICE_ITEM;
@@ -165,33 +185,16 @@ public class BattleManager extends Application {
         heal = createTalkOption("Heal", scene, 1);
         heal.setOnAction(e -> {
             healpotion.hpUp();
-
             handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
-
         });
         t_option1.setOnAction(e -> {
-            Random r = new Random();
-            int random = r.nextInt(2);
-            if (random % 2 == 0)
-                handlePlayerChoiceTwo(battleBox, root, player, "You plead. The villain chuckles.");
-            else
-                handlePlayerChoice("You plead. The villain chuckles.");
+            handlePlayerChoiceTwo(battleBox, root, player, "You plead. The villain chuckles.");
         });
         t_option2.setOnAction(e -> {
-            Random r = new Random();
-            int random = r.nextInt(2);
-            if (random % 2 == 0)
-                handlePlayerChoiceTwo(battleBox, root, player, "You insult the villain. Its eyes glow red.");
-            else
-                handlePlayerChoice("You insult the villain. Its eyes glow red.");
+            handlePlayerChoiceTwo(battleBox, root, player, "You insult the villain. Its eyes glow red.");
         });
         t_option3.setOnAction(e -> {
-            Random r = new Random();
-            int random = r.nextInt(2);
-            if (random % 2 == 0)
-                handlePlayerChoiceTwo(battleBox, root, player, "You stay silent. The air grows heavy.");
-            else
-                handlePlayerChoice("You stay silent. The air grows heavy.");
+            handlePlayerChoiceTwo(battleBox, root, player, "You stay silent. The air grows heavy.");
         });
         Rectangle dialogueBackground = new Rectangle();
         dialogueBackground.widthProperty().bind(scene.widthProperty().multiply(0.15));
@@ -384,6 +387,125 @@ public class BattleManager extends Application {
         });
         pause.play();
     }
+
+    public Pane BossFight(Runnable onFinishCallback, int[] Hp, ArrayList<Integer> Damages) {
+        Pane root = new Pane();
+
+        final int RECT_WIDTH = 600;
+        final int RECT_HEIGHT = 150;
+        final double lineSpeed = 4;
+
+        Line movingLine = new Line(0, 7, 0, RECT_HEIGHT - 7);
+        movingLine.setStroke(Color.WHITE);
+        movingLine.setStrokeWidth(5);
+
+        boolean[] isPaused = {false};
+        boolean[] spacePressed = {false};
+        boolean[] fightActive = {true};
+
+        Pane fight = new Pane();
+        fight.setLayoutX(145);
+        fight.setLayoutY(200);
+
+        Image fightImage = new Image("/Battle Background.jpg");
+        ImageView imageView = new ImageView(fightImage);
+        imageView.setFitWidth(RECT_WIDTH);
+        imageView.setFitHeight(RECT_HEIGHT);
+        imageView.setPreserveRatio(false);
+
+        Rectangle clip = new Rectangle(0, 0, RECT_WIDTH, RECT_HEIGHT);
+        imageView.setClip(clip);
+
+        Rectangle border = new Rectangle(0, 0, RECT_WIDTH, RECT_HEIGHT);
+        border.setFill(Color.TRANSPARENT);
+        border.setStroke(Color.WHITE);
+        border.setStrokeWidth(2);
+
+        fight.getChildren().addAll(imageView, border, movingLine);
+        root.getChildren().addAll(fight);
+
+        AnimationTimer moveTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                if (!isPaused[0] && fightActive[0]) {
+                    double x = movingLine.getStartX();
+                    x += lineSpeed;
+                    if (x >= RECT_WIDTH) {
+                        x = RECT_WIDTH;
+                    }
+
+                    movingLine.setStartX(x);
+                    movingLine.setEndX(x);
+
+                    if (!spacePressed[0] && (x >= RECT_WIDTH)) {
+                        fightActive[0] = false;
+                        movingLine.setOpacity(0);
+                        this.stop();
+                        onFinishCallback.run();
+                    }
+                }
+            }
+        };
+
+        root.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.SPACE && !spacePressed[0] && fightActive[0]) {
+                spacePressed[0] = true;
+                double x = movingLine.getStartX();
+                double center = RECT_WIDTH / 2.0;
+                double distance = Math.abs(x - center);
+
+                if (distance < 20)
+                    Hp[0] -= Damages.get(1);
+                else
+                    Hp[0] -= Damages.get(0);
+
+                isPaused[0] = true;
+
+                AnimationTimer blinkTimer = new AnimationTimer() {
+                    long startTime = System.nanoTime();
+                    boolean isBright = true;
+
+                    @Override
+                    public void handle(long now) {
+                        long elapsedMs = (now - startTime) / 1_000_000;
+                        if (elapsedMs > 2500) {
+                            stop();
+                            isPaused[0] = false;
+                            movingLine.setStroke(Color.WHITE);
+                            movingLine.setOpacity(1.0);
+                            movingLine.setStartX(0);
+                            movingLine.setEndX(0);
+                            fightActive[0] = false;
+                            onFinishCallback.run();
+                        }
+
+                        if (isBright) {
+                            movingLine.setStroke(Color.WHITE);
+                            movingLine.setOpacity(1.0);
+                        } else {
+                            movingLine.setStroke(Color.RED);
+                            movingLine.setOpacity(0.3);
+                        }
+                        isBright = !isBright;
+                    }
+                };
+                blinkTimer.start();
+            }
+        });
+
+        moveTimer.start();
+
+        root.setFocusTraversable(true);
+        return root;
+    }
+
+    public ArrayList<Integer> Damages() {
+        ArrayList<Integer> damage = new ArrayList<>();
+        damage.add(5);   // Weak hit
+        damage.add(10);  // Strong hit (close to center)
+        return damage;
+    }
+
 
     public static void main(String[] args) {
         launch(args);
