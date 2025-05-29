@@ -400,7 +400,7 @@ public class BattleManager extends Application {
         movingLine.setStrokeWidth(5);
 
         boolean[] isPaused = {false};
-        boolean[] spacePressed = {false};
+        boolean[] enterPressed = {false};
         boolean[] fightActive = {true};
 
         Pane fight = new Pane();
@@ -437,7 +437,7 @@ public class BattleManager extends Application {
                     movingLine.setStartX(x);
                     movingLine.setEndX(x);
 
-                    if (!spacePressed[0] && (x >= RECT_WIDTH)) {
+                    if (!enterPressed[0] && (x >= RECT_WIDTH)) {
                         fightActive[0] = false;
                         movingLine.setOpacity(0);
                         this.stop();
@@ -448,8 +448,8 @@ public class BattleManager extends Application {
         };
 
         root.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.SPACE && !spacePressed[0] && fightActive[0]) {
-                spacePressed[0] = true;
+            if (e.getCode() == KeyCode.ENTER && !enterPressed[0] && fightActive[0]) {
+                enterPressed[0] = true;
                 double x = movingLine.getStartX();
                 double center = RECT_WIDTH / 2.0;
                 double distance = Math.abs(x - center);
@@ -502,7 +502,7 @@ public class BattleManager extends Application {
     public ArrayList<Integer> Damages() {
         ArrayList<Integer> damage = new ArrayList<>();
         damage.add(5);   // Weak hit
-        damage.add(10);  // Strong hit (close to center)
+        damage.add(10);  // Strong hit
         return damage;
     }
 
