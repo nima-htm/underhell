@@ -4,6 +4,7 @@ import javafx.animation.TranslateTransition;
 import javafx.geometry.Bounds;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
@@ -80,6 +81,8 @@ public class Alastor extends Villain {
         timeline.play();
     }
 
+    AudioClip hitSound = new AudioClip(getClass().getResource("/sounds/hit.wav").toExternalForm());
+
     public void Laser(Rectangle battleBox, Pane root, Player p) {
         Random rand = new Random();
         int numberOfLasers = 60;
@@ -130,7 +133,7 @@ public class Alastor extends Villain {
                     laser.setEffect(glow0);
                     Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
                     Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
-
+                    hitSound.play();
                     if (laserBounds.intersects(heartBounds)) {
                         Shape intersection = Shape.intersect(laser, getHeart());
                         if (intersection.getBoundsInLocal().getWidth() != -1) {
