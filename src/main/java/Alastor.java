@@ -84,21 +84,43 @@ public class Alastor extends Villain {
 
             KeyFrame kf = new KeyFrame(Duration.seconds(delay), event -> {
                 Line laser = new Line();
+//                boolean horizontal = rand.nextBoolean();
+//
+//                if (horizontal) {
+//                    double y = boxY + rand.nextDouble() * boxHeight;
+//                    laser.setStartX(boxX);
+//                    laser.setStartY(y);
+//                    laser.setEndX(boxX + boxWidth);
+//                    laser.setEndY(y);
+//                } else {
+//                    double x = boxX + rand.nextDouble() * boxWidth;
+//                    laser.setStartX(x);
+//                    laser.setStartY(boxY);
+//                    laser.setEndX(x);
+//                    laser.setEndY(boxY + boxHeight);
+//                }
+                Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
+                double heartCenterX = heartBounds.getMinX() + heartBounds.getWidth() / 2;
+                double heartCenterY = heartBounds.getMinY() + heartBounds.getHeight() / 2;
+
                 boolean horizontal = rand.nextBoolean();
 
                 if (horizontal) {
-                    double y = boxY + rand.nextDouble() * boxHeight;
+                    // Horizontal laser: full width of battleBox, aimed at heart's Y
+                    double y = heartCenterY;
                     laser.setStartX(boxX);
                     laser.setStartY(y);
                     laser.setEndX(boxX + boxWidth);
                     laser.setEndY(y);
                 } else {
-                    double x = boxX + rand.nextDouble() * boxWidth;
+                    // Vertical laser: full height of battleBox, aimed at heart's X
+                    double x = heartCenterX;
                     laser.setStartX(x);
                     laser.setStartY(boxY);
                     laser.setEndX(x);
                     laser.setEndY(boxY + boxHeight);
                 }
+
 
                 laser.setStroke(Color.BLUE);
                 laser.setStrokeWidth(8);
@@ -117,7 +139,7 @@ public class Alastor extends Villain {
                     glow.setRadius(20);
                     laser.setEffect(glow0);
                     Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
-                    Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
+                 //   Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
 
                     if (laserBounds.intersects(heartBounds)) {
                         Shape intersection = Shape.intersect(laser, getHeart());

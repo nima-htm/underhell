@@ -164,12 +164,7 @@ public class BattleManager extends Application {
         heal = createTalkOption("Heal", scene, 1);
         heal.setOnAction(e -> {
             healpotion.hpUp();
-            Random r = new Random();
-            int random = r.nextInt(2);
-            if (random % 2 == 0)
                 handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
-            else
-                handlePlayerChoice("Useless~");
         });
         t_option1.setOnAction(e -> {
             Random r = new Random();
