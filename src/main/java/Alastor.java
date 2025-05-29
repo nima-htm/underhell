@@ -112,10 +112,10 @@ public class Alastor extends Villain {
                     laser.setEndY(boxY + boxHeight);
                 }
 
-                laser.setStroke(Color.BLUE);
+                laser.setStroke(Color.WHITE);
                 laser.setStrokeWidth(8);
                 DropShadow glow = new DropShadow();
-                glow.setColor(Color.BLUE);
+                glow.setColor(Color.WHITE);
                 glow.setRadius(20);
                 laser.setEffect(glow);
                 root.getChildren().add(laser);
