@@ -247,7 +247,6 @@ public class BattleManager extends Application {
 
                 new CubicCurveTo(size / 2, 0, 0, 0, 0, size / 3),
                 new CubicCurveTo(0, size / 2, size / 2, size * 0.8, size / 2, size),
-
                 new CubicCurveTo(size / 2, size * 0.8, size, size / 2, size, size / 3),
                 new CubicCurveTo(size, 0, size / 2, 0, size / 2, size / 5)
         );
