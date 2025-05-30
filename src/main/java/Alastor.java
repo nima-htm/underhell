@@ -99,26 +99,31 @@ public class Alastor extends Villain {
 
             KeyFrame kf = new KeyFrame(Duration.seconds(delay), event -> {
                 Line laser = new Line();
+                Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
+                double heartCenterX = heartBounds.getMinX() + heartBounds.getWidth() / 2;
+                double heartCenterY = heartBounds.getMinY() + heartBounds.getHeight() / 2;
+
                 boolean horizontal = rand.nextBoolean();
 
                 if (horizontal) {
-                    double y = boxY + rand.nextDouble() * boxHeight;
+                    double y = heartCenterY;
                     laser.setStartX(boxX);
                     laser.setStartY(y);
                     laser.setEndX(boxX + boxWidth);
                     laser.setEndY(y);
                 } else {
-                    double x = boxX + rand.nextDouble() * boxWidth;
+                    double x = heartCenterX;
                     laser.setStartX(x);
                     laser.setStartY(boxY);
                     laser.setEndX(x);
                     laser.setEndY(boxY + boxHeight);
                 }
 
-                laser.setStroke(Color.WHITE);
+
+                laser.setStroke(Color.BLUE);
                 laser.setStrokeWidth(8);
                 DropShadow glow = new DropShadow();
-                glow.setColor(Color.WHITE);
+                glow.setColor(Color.BLUE);
                 glow.setRadius(20);
                 laser.setEffect(glow);
                 root.getChildren().add(laser);
@@ -132,7 +137,6 @@ public class Alastor extends Villain {
                     glow.setRadius(20);
                     laser.setEffect(glow0);
                     Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
-                    Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
                     hitSound.play();
                     if (laserBounds.intersects(heartBounds)) {
                         Shape intersection = Shape.intersect(laser, getHeart());
