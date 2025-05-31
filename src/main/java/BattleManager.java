@@ -26,7 +26,7 @@ import java.util.Random;
 import java.util.Set;
 
 public class BattleManager extends Application {
-
+    Media bgMusic = new Media(getClass().getResource("/sounds/bg_music.m4a").toExternalForm());
     Random random = new Random();
     private Rectangle battleBox;
     private Rectangle playerHPBackground;
@@ -166,13 +166,10 @@ public class BattleManager extends Application {
                 handlePlayerChoiceTwo(battleBox, root, player, "Ahh, that hurts, you gotta pay for that!");
                 ((Pane) fightButton.getScene().getRoot()).getChildren().remove(bossFightPane[0]);
 
-                // Restore battleBox visibility & focus here:
                 battleBox.setOpacity(1);
                 battleBox.setScaleX(1);
                 battleBox.setScaleY(1);
                 battleBox.requestFocus();
-
-                // Optional: Reset heart position to center of battleBox
                 Bounds bounds = battleBox.localToScene(battleBox.getBoundsInLocal());
                 double centerX = (bounds.getMinX() + bounds.getMaxX()) / 2;
                 double centerY = (bounds.getMinY() + bounds.getMaxY()) / 2;
@@ -189,6 +186,7 @@ public class BattleManager extends Application {
             if (currentState == GameState.ENEMY_TURN) return;
             currentState = GameState.PLAYER_CHOICE_ITEM;
             options_visibility(fightButton, talkButton, itemButton, false);
+            heart.setVisible(false);
             item_options_visibility(true);
             talk_options_visibility(false);
         });
@@ -198,6 +196,7 @@ public class BattleManager extends Application {
             if (currentState == GameState.ENEMY_TURN) return;
             currentState = GameState.PLAYER_CHOICE_TALK;
             options_visibility(fightButton, talkButton, itemButton, false);
+            heart.setVisible(false);
             talk_options_visibility(true);
             item_options_visibility(false);
         });
@@ -246,6 +245,8 @@ public class BattleManager extends Application {
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText,
                 t_option1, t_option2, t_option3
         );
+        GameBeginningMethods();
+
 
         final Set<KeyCode> activeKeys = new HashSet<>();
         scene.setOnKeyPressed(event -> activeKeys.add(event.getCode()));
@@ -292,7 +293,7 @@ public class BattleManager extends Application {
         dialogueText.setText(message);
         dialogueBar.setVisible(true);
 
-        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        PauseTransition pause = new PauseTransition(Duration.seconds(10));
         pause.setOnFinished(e -> dialogueBar.setVisible(false));
         pause.play();
     }
@@ -344,26 +345,28 @@ public class BattleManager extends Application {
         btn.layoutYProperty().bind(battleBox.yProperty().add(30 + index * 50));
         return btn;
     }
-
-    private void handlePlayerChoice(String message) {
-        talk_options_visibility(false);
-        item_options_visibility(false);
-        options_visibility(fightButton, talkButton, itemButton, false);
-        showDialogue(message);
-        PauseTransition pause = new PauseTransition(Duration.seconds(3));
-        pause.setOnFinished(ev -> {
-            currentState = GameState.ENEMY_TURN;
-            alastor.throwSpearAll();
-            PauseTransition resume = new PauseTransition(Duration.seconds(11));
-            resume.setOnFinished(e -> {
-                currentState = GameState.PLAYER_CHOICE_OPTIONS;
-                options_visibility(fightButton, talkButton, itemButton, true);
-            });
-
-            resume.play();
-        });
-        pause.play();
-    }
+//
+//    private void handlePlayerChoice(String message) {
+//        talk_options_visibility(false);
+//        item_options_visibility(false);
+//        options_visibility(fightButton, talkButton, itemButton, false);
+//        showDialogue(message);
+//        heart.setVisible(true);
+//        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+//        pause.setOnFinished(ev -> {
+//            currentState = GameState.ENEMY_TURN;
+//            alastor.throwSpearAll();
+//            PauseTransition resume = new PauseTransition(Duration.seconds(11));
+//            resume.setOnFinished(e -> {
+//                currentState = GameState.PLAYER_CHOICE_OPTIONS;
+//                options_visibility(fightButton, talkButton, itemButton, true);
+//                heart.setVisible(false);
+//            });
+//
+//            resume.play();
+//        });
+//        pause.play();
+//    }
 
     private void talk_options_visibility(boolean isVisible) {
         t_option1.setVisible(isVisible);
@@ -386,6 +389,7 @@ public class BattleManager extends Application {
         options_visibility(fightButton, talkButton, itemButton, false);
         showDialogue(s);
         item_options_visibility(false);
+        heart.setVisible(true);
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
@@ -402,10 +406,11 @@ public class BattleManager extends Application {
                 default -> 1;
             };
 
-            PauseTransition resume = new PauseTransition(Duration.seconds(sd)); // Adjust as needed
+            PauseTransition resume = new PauseTransition(Duration.seconds(sd + 1));
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
+                heart.setVisible(false);
             });
             resume.play();
         });
@@ -422,54 +427,37 @@ public class BattleManager extends Application {
         Line movingLine = new Line(0, 7, 0, RECT_HEIGHT - 7);
         movingLine.setStroke(Color.WHITE);
         movingLine.setStrokeWidth(5);
-
         boolean[] isPaused = {false};
         boolean[] enterPressed = {false};
         boolean[] fightActive = {true};
-
         Pane fight = new Pane();
         fight.setLayoutX(145);
         fight.setLayoutY(200);
-
         Image fightImage = new Image("/Battle Background.jpg");
         ImageView imageView = new ImageView(fightImage);
         imageView.setFitWidth(RECT_WIDTH);
         imageView.setFitHeight(RECT_HEIGHT);
         imageView.setPreserveRatio(false);
-
         Rectangle clip = new Rectangle(0, 0, RECT_WIDTH, RECT_HEIGHT);
         imageView.setClip(clip);
-
         Rectangle border = new Rectangle(0, 0, RECT_WIDTH, RECT_HEIGHT);
         border.setFill(Color.TRANSPARENT);
         border.setStroke(Color.WHITE);
         border.setStrokeWidth(2);
-
         fight.getChildren().addAll(imageView, border, movingLine);
         root.getChildren().addAll(fight);
-
-        // HP Bar dimensions
         final int HP_BAR_WIDTH = 200;
         final int HP_BAR_HEIGHT = 20;
-        final int HP_BAR_X = 350; // Adjust as needed
-        final int HP_BAR_Y = 155;  // Position below the fight pane
-
-// HP Background (static)
+        final int HP_BAR_X = 350;
+        final int HP_BAR_Y = 155;
         Rectangle hpBarBackground = new Rectangle(HP_BAR_X, HP_BAR_Y, HP_BAR_WIDTH, HP_BAR_HEIGHT);
         hpBarBackground.setFill(Color.RED);
-
-// HP Foreground (dynamic)
         Rectangle hpBarForeground = new Rectangle(HP_BAR_X, HP_BAR_Y, HP_BAR_WIDTH, HP_BAR_HEIGHT);
         hpBarForeground.setFill(Color.YELLOW);
-
-        // Set initial width based on current HP
-        double maxHp = 100.0; // Replace with actual max HP if needed
+        double maxHp = 100.0;
         double currentHpPercent = Hp[0] / maxHp;
         hpBarForeground.setWidth(HP_BAR_WIDTH * currentHpPercent);
-
-
         root.getChildren().addAll(hpBarBackground, hpBarForeground);
-
         AnimationTimer moveTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -581,8 +569,50 @@ public class BattleManager extends Application {
     }
 
 
+    public void GameBeginningMethods(){
+
+        MediaPlayer mediaPlayer = new MediaPlayer(bgMusic);
+        mediaPlayer.setOnReady(() -> {
+            mediaPlayer.seek(Duration.seconds(3));
+            mediaPlayer.play();
+        });
+        mediaPlayer.setOnEndOfMedia(() -> {
+            mediaPlayer.seek(Duration.seconds(3));
+            mediaPlayer.play();
+        });
+        mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+        mediaPlayer.setVolume(0.8);
+        options_visibility(fightButton, talkButton, itemButton, false);
+
+        String[] dialogues = {
+                "Welcome to M Y H E L L <<<<<<<:::::: ",
+                "You gonna Die soon",
+                "Or... Maybe we can make a deal...",
+                "A trade based on your S O U L <: "
+        };
+
+        double delayBetween = 2.5;
+
+        for (int i = 0; i < dialogues.length; i++) {
+            String line = dialogues[i];
+            PauseTransition pause = new PauseTransition(Duration.seconds(i * delayBetween));
+            pause.setOnFinished(e -> showDialogue(line));
+            pause.play();
+        }
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(10));
+
+        pause.setOnFinished(ev -> {
+            PauseTransition resume = new PauseTransition(Duration.seconds(0)); // Adjust as needed
+            resume.setOnFinished(e -> {
+                currentState = GameState.PLAYER_CHOICE_OPTIONS;
+                options_visibility(fightButton, talkButton, itemButton, true);
+            });
+            resume.play();
+        });
+        pause.play();
+    }
     public static void main(String[] args) {
         launch(args);
-
     }
 }
