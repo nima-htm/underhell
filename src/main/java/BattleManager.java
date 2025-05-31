@@ -10,6 +10,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.scene.text.Text;
@@ -42,8 +44,11 @@ public class BattleManager extends Application {
     Button talkButton = new Button("TALK");
     Alastor alastor = new Alastor(100);
 
+
     @Override
     public void start(Stage stage) {
+
+
         alastor.setPlayer(player);
         Item healpotion = new Item(player);
         Pane root = new Pane();
@@ -251,7 +256,7 @@ public class BattleManager extends Application {
             public void handle(long now) {
                 double x = heart.getTranslateX();
                 double y = heart.getTranslateY();
-                final double speed = 8;
+                final double speed = 1;
                 if (activeKeys.contains(KeyCode.A)) {
                     moveHeart((-1) * speed, 0);
                 }
@@ -412,7 +417,7 @@ public class BattleManager extends Application {
 
         final int RECT_WIDTH = 600;
         final int RECT_HEIGHT = 150;
-        final double lineSpeed = 2.5;
+        final double lineSpeed = 1.5;
 
         Line movingLine = new Line(0, 7, 0, RECT_HEIGHT - 7);
         movingLine.setStroke(Color.WHITE);
