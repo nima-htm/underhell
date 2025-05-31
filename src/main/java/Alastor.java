@@ -81,7 +81,7 @@ public class Alastor extends Villain {
         timeline.play();
     }
 
-    AudioClip hitSound = new AudioClip(getClass().getResource("/sounds/hit.wav").toExternalForm());
+//    AudioClip hitSound = new AudioClip(getClass().getResource("/sounds/hit.wav").toExternalForm());
 
     public void Laser(Rectangle battleBox, Pane root, Player p) {
         Random rand = new Random();
@@ -137,7 +137,7 @@ public class Alastor extends Villain {
                     glow.setRadius(20);
                     laser.setEffect(glow0);
                     Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
-                    hitSound.play();
+//                    hitSound.play();
                     if (laserBounds.intersects(heartBounds)) {
                         Shape intersection = Shape.intersect(laser, getHeart());
                         if (intersection.getBoundsInLocal().getWidth() != -1) {

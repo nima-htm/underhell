@@ -1,7 +1,4 @@
-import javafx.animation.AnimationTimer;
-import javafx.animation.PauseTransition;
-import javafx.animation.Timeline;
-import javafx.animation.KeyFrame;
+import javafx.animation.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -18,6 +15,7 @@ import javafx.scene.shape.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.Node;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -146,19 +144,40 @@ public class BattleManager extends Application {
             if (currentState != GameState.PLAYER_CHOICE_OPTIONS) return;
             currentState = GameState.PLAYER_CHOICE_FIGHT;
             options_visibility(fightButton, talkButton, itemButton, false);
+            heart.setVisible(false);
+
             ArrayList<Integer> damages = Damages();
             int[] villainHP = {alastor.getHp()};
             final Pane[] bossFightPane = new Pane[1];
+
+            playTransition(battleBox, bossFightPane[0], () -> {
+                ((Pane) fightButton.getScene().getRoot()).getChildren().add(bossFightPane[0]);
+                bossFightPane[0].requestFocus();
+            });
+
             bossFightPane[0] = BossFight(() -> {
                 alastor.setHp(villainHP[0]);
                 currentState = GameState.ENEMY_TURN;
                 handlePlayerChoiceTwo(battleBox, root, player, "Ahh, that hurts, you gotta pay for that!");
                 ((Pane) fightButton.getScene().getRoot()).getChildren().remove(bossFightPane[0]);
+
+                // Restore battleBox visibility & focus here:
+                battleBox.setOpacity(1);
+                battleBox.setScaleX(1);
+                battleBox.setScaleY(1);
+                battleBox.requestFocus();
+
+                // Optional: Reset heart position to center of battleBox
+                Bounds bounds = battleBox.localToScene(battleBox.getBoundsInLocal());
+                double centerX = (bounds.getMinX() + bounds.getMaxX()) / 2;
+                double centerY = (bounds.getMinY() + bounds.getMaxY()) / 2;
+                heart.setLayoutX(centerX);
+                heart.setLayoutY(centerY);
+                heart.setVisible(true);
             }, villainHP, damages);
 
-            ((Pane) fightButton.getScene().getRoot()).getChildren().add(bossFightPane[0]);
-            bossFightPane[0].requestFocus();
         });
+
 
 
         itemButton.setOnAction(e -> {
@@ -232,7 +251,7 @@ public class BattleManager extends Application {
             public void handle(long now) {
                 double x = heart.getTranslateX();
                 double y = heart.getTranslateY();
-                final double speed = 1;
+                final double speed = 8;
                 if (activeKeys.contains(KeyCode.A)) {
                     moveHeart((-1) * speed, 0);
                 }
@@ -393,7 +412,7 @@ public class BattleManager extends Application {
 
         final int RECT_WIDTH = 600;
         final int RECT_HEIGHT = 150;
-        final double lineSpeed = 4;
+        final double lineSpeed = 2.5;
 
         Line movingLine = new Line(0, 7, 0, RECT_HEIGHT - 7);
         movingLine.setStroke(Color.WHITE);
@@ -424,6 +443,28 @@ public class BattleManager extends Application {
         fight.getChildren().addAll(imageView, border, movingLine);
         root.getChildren().addAll(fight);
 
+        // HP Bar dimensions
+        final int HP_BAR_WIDTH = 200;
+        final int HP_BAR_HEIGHT = 20;
+        final int HP_BAR_X = 350; // Adjust as needed
+        final int HP_BAR_Y = 155;  // Position below the fight pane
+
+// HP Background (static)
+        Rectangle hpBarBackground = new Rectangle(HP_BAR_X, HP_BAR_Y, HP_BAR_WIDTH, HP_BAR_HEIGHT);
+        hpBarBackground.setFill(Color.RED);
+
+// HP Foreground (dynamic)
+        Rectangle hpBarForeground = new Rectangle(HP_BAR_X, HP_BAR_Y, HP_BAR_WIDTH, HP_BAR_HEIGHT);
+        hpBarForeground.setFill(Color.YELLOW);
+
+        // Set initial width based on current HP
+        double maxHp = 100.0; // Replace with actual max HP if needed
+        double currentHpPercent = Hp[0] / maxHp;
+        hpBarForeground.setWidth(HP_BAR_WIDTH * currentHpPercent);
+
+
+        root.getChildren().addAll(hpBarBackground, hpBarForeground);
+
         AnimationTimer moveTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -448,7 +489,7 @@ public class BattleManager extends Application {
         };
 
         root.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER && !enterPressed[0] && fightActive[0]) {
+            if (e.getCode() == KeyCode.SPACE && !enterPressed[0] && fightActive[0]) {
                 enterPressed[0] = true;
                 double x = movingLine.getStartX();
                 double center = RECT_WIDTH / 2.0;
@@ -458,6 +499,9 @@ public class BattleManager extends Application {
                     Hp[0] -= Damages.get(1);
                 else
                     Hp[0] -= Damages.get(0);
+
+                double updatedHpPercent = Hp[0] / maxHp;
+                hpBarForeground.setWidth(HP_BAR_WIDTH * updatedHpPercent);
 
                 isPaused[0] = true;
 
@@ -504,6 +548,31 @@ public class BattleManager extends Application {
         damage.add(5);   // Weak hit
         damage.add(10);  // Strong hit
         return damage;
+    }
+
+    private void playTransition(Node from, Node to, Runnable onCollapseFinished) {
+        Timeline collapse = new Timeline(
+                new KeyFrame(Duration.seconds(0.5),
+                        new KeyValue(from.opacityProperty(), 0),
+                        new KeyValue(from.scaleXProperty(), 0),
+                        new KeyValue(from.scaleYProperty(), 0)
+                )
+        );
+
+        collapse.setOnFinished(e -> {
+            onCollapseFinished.run();
+
+            Timeline appear = new Timeline(
+                    new KeyFrame(Duration.seconds(0.5),
+                            new KeyValue(to.opacityProperty(), 1),
+                            new KeyValue(to.scaleXProperty(), 1),
+                            new KeyValue(to.scaleYProperty(), 1)
+                    )
+            );
+            appear.play();
+        });
+
+        collapse.play();
     }
 
 
