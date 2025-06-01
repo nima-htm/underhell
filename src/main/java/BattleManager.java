@@ -620,6 +620,7 @@ public class BattleManager extends Application {
         shakeStage(stage);
         AudioClip sound = new AudioClip(getClass().getResource("/sounds/jumpscare.mp3").toExternalForm());
         sound.play();
+        sound.play();
 
         Scene gameOverScene = new Scene(gameOverRoot, 800, 600);
         stage.setScene(gameOverScene);
@@ -631,14 +632,14 @@ public class BattleManager extends Application {
 
 
 
-        PauseTransition delay = new PauseTransition(Duration.seconds(1));
+        PauseTransition delay = new PauseTransition(Duration.seconds(2));
         delay.setOnFinished(e -> Platform.exit());
         delay.play();
     }
 
     private void shakeStage(Stage stage) {
         final int shakeDistance = 60;
-        final int shakeCycle = 40; // Number of shakes
+        final int shakeCycle = 60; // Number of shakes
         final int intervalMs = 60; // ms between shakes
         double originalX = stage.getX();
         double originalY = stage.getY();
