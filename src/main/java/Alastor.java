@@ -18,12 +18,11 @@ import java.util.Objects;
 import java.util.Random;
 
 public class Alastor extends Villain {
+    private Player p;
 
     public Alastor(int hp) {
         super(hp);
     }
-
-    private Player p;
 
     public void setPlayer(Player p) {
         this.p = p;
@@ -137,7 +136,11 @@ public class Alastor extends Villain {
                     glow.setRadius(20);
                     laser.setEffect(glow0);
                     Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
-                   hitSound.play();
+                    p.getHp().addListener((observable, oldValue, newValue) -> {
+                        if (newValue.intValue() >0) {
+                            hitSound.play();
+                        }
+                    });
                     if (laserBounds.intersects(heartBounds)) {
                         Shape intersection = Shape.intersect(laser, getHeart());
                         if (intersection.getBoundsInLocal().getWidth() != -1) {

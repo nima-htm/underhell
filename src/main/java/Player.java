@@ -5,7 +5,7 @@ public class Player {
     private String name;
     private int level;
     private IntegerProperty hp = new SimpleIntegerProperty(100);
-
+    private int Hp;
     Player(String name) {
         this.name = name;
     }
@@ -36,8 +36,10 @@ public class Player {
         return hp;
     }
 
+
     public int gethp() {
-        return hp.get();
+
+        return getHp().get();
     }
 
     public void getdmg(int dmg) {
