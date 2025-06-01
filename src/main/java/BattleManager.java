@@ -5,11 +5,14 @@ import javafx.beans.binding.Bindings;
 import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
@@ -213,8 +216,10 @@ public class BattleManager extends Application {
         heal.setOnAction(e -> {
             healpotion.hpUp();
             handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
+
         });
         t_option1.setOnAction(e -> {
+
             handlePlayerChoiceTwo(battleBox, root, player, "You plead. The villain chuckles.");
         });
         t_option2.setOnAction(e -> {
@@ -285,6 +290,11 @@ public class BattleManager extends Application {
         stage.setScene(scene);
         stage.show();
         stage.show();
+        player.getHp().addListener((observable, oldValue, newValue) -> {
+            if (newValue.intValue() <= 0) {
+                gameOver(stage);
+            }
+        });
 
         Platform.runLater(() -> {
             Bounds bounds = battleBox.localToScene(battleBox.getBoundsInLocal());
@@ -391,6 +401,7 @@ public class BattleManager extends Application {
                 }
                 default -> 1;
             };
+
 
             PauseTransition resume = new PauseTransition(Duration.seconds(sd + 1));
             resume.setOnFinished(e -> {
@@ -599,7 +610,55 @@ public class BattleManager extends Application {
         });
         pause.play();
     }
-    public static void main(String[] args) {
+    private void gameOver(Stage stage) {
+
+        Label gameOverLabel = new Label("GAME OVER");
+        gameOverLabel.setTextFill(Color.RED);
+        gameOverLabel.setStyle("-fx-font-size: 64px; -fx-font-weight: bold;");
+        StackPane gameOverRoot = new StackPane(gameOverLabel);
+        gameOverRoot.setStyle("-fx-background-color: black;");
+        shakeStage(stage);
+        AudioClip sound = new AudioClip(getClass().getResource("/sounds/jumpscare.mp3").toExternalForm());
+        sound.play();
+
+        Scene gameOverScene = new Scene(gameOverRoot, 800, 600);
+        stage.setScene(gameOverScene);
+        stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+        stage.setFullScreenExitHint(" ");
+        stage.setFullScreen(true);
+        stage.setResizable(false);
+        stage.centerOnScreen();
+
+
+
+        PauseTransition delay = new PauseTransition(Duration.seconds(1));
+        delay.setOnFinished(e -> Platform.exit());
+        delay.play();
+    }
+
+    private void shakeStage(Stage stage) {
+        final int shakeDistance = 60;
+        final int shakeCycle = 40; // Number of shakes
+        final int intervalMs = 60; // ms between shakes
+        double originalX = stage.getX();
+        double originalY = stage.getY();
+
+        Timeline timeline = new Timeline();
+
+        for (int i = 0; i < shakeCycle; i++) {
+            int finalI = i;
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(i * intervalMs), event -> {
+                double offsetX = (Math.random() - 0.5) * 2 * shakeDistance;
+                double offsetY = (Math.random() - 0.5) * 2 * shakeDistance;
+                stage.setX(originalX + offsetX);
+                stage.setY(originalY + offsetY);
+            });
+            timeline.getKeyFrames().add(keyFrame);
+        }
+        timeline.play();
+    }
+
+public static void main(String[] args) {
         launch(args);
     }
 }
