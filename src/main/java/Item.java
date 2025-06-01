@@ -1,4 +1,5 @@
 public class Item {
+    public Integer atkUp;
     private Player player;
 
     public Item(Player player) {
@@ -11,5 +12,8 @@ public class Item {
         } else if (player.gethp() <= 80 && player.gethp() > 0) {
             player.setHp(player.gethp() + 20);
         }
+    }
+    public int atkUp(int dmg){
+        return dmg+=5;
     }
 }
