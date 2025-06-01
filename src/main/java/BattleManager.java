@@ -22,7 +22,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.Node;
 
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
@@ -50,8 +49,6 @@ public class BattleManager extends Application {
 
     @Override
     public void start(Stage stage) {
-
-
         alastor.setPlayer(player);
         Item healpotion = new Item(player);
         Pane root = new Pane();
@@ -63,7 +60,7 @@ public class BattleManager extends Application {
         Text playerNameText = new Text(player.getName());
         playerNameText.setFill(Color.WHITE);
         playerNameText.getStyleClass().add("game-label");
-        Text playerHp  = new Text();
+        Text playerHp = new Text();
         playerHp.textProperty().bind(Bindings.concat(
                 " HP:", player.getHp().asString()));
 
@@ -189,7 +186,6 @@ public class BattleManager extends Application {
         });
 
 
-
         itemButton.setOnAction(e -> {
             if (currentState == GameState.ENEMY_TURN) return;
             currentState = GameState.PLAYER_CHOICE_ITEM;
@@ -230,7 +226,6 @@ public class BattleManager extends Application {
         });
 
 
-
         Rectangle dialogueBackground = new Rectangle();
         dialogueBackground.widthProperty().bind(scene.widthProperty().multiply(0.15));
         dialogueBackground.heightProperty().bind(scene.heightProperty().multiply(0.2));
@@ -254,10 +249,10 @@ public class BattleManager extends Application {
         root.getChildren().addAll(
                 villainImage,
                 battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame,
-                fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText,playerHp,
+                fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp,
                 t_option1, t_option2, t_option3
         );
-   //     GameBeginningMethods();
+        GameBeginningMethods();
 
 
         final Set<KeyCode> activeKeys = new HashSet<>();
@@ -362,7 +357,6 @@ public class BattleManager extends Application {
         btn.layoutYProperty().bind(battleBox.yProperty().add(30 + index * 50));
         return btn;
     }
-
 
     private void talk_options_visibility(boolean isVisible) {
         t_option1.setVisible(isVisible);
@@ -535,7 +529,7 @@ public class BattleManager extends Application {
 
     public ArrayList<Integer> Damages() {
         ArrayList<Integer> damage = new ArrayList<>();
-        int dmg =5;
+        int dmg = 5;
         damage.add(5);
         damage.add(10);
         return damage;
@@ -566,10 +560,9 @@ public class BattleManager extends Application {
         collapse.play();
     }
 
+    MediaPlayer mediaPlayer = new MediaPlayer(bgMusic);
 
-    public void GameBeginningMethods(){
-
-        MediaPlayer mediaPlayer = new MediaPlayer(bgMusic);
+    public void GameBeginningMethods() {
         mediaPlayer.setOnReady(() -> {
             mediaPlayer.seek(Duration.seconds(3));
             mediaPlayer.play();
@@ -610,6 +603,7 @@ public class BattleManager extends Application {
         });
         pause.play();
     }
+
     private void gameOver(Stage stage) {
 
         Label gameOverLabel = new Label("GAME OVER");
@@ -618,6 +612,7 @@ public class BattleManager extends Application {
         StackPane gameOverRoot = new StackPane(gameOverLabel);
         gameOverRoot.setStyle("-fx-background-color: black;");
         shakeStage(stage);
+        mediaPlayer.pause();
         AudioClip sound = new AudioClip(getClass().getResource("/sounds/jumpscare.mp3").toExternalForm());
         sound.play();
         sound.play();
@@ -631,23 +626,21 @@ public class BattleManager extends Application {
         stage.centerOnScreen();
 
 
-
-        PauseTransition delay = new PauseTransition(Duration.seconds(2));
+        PauseTransition delay = new PauseTransition(Duration.seconds(4));
         delay.setOnFinished(e -> Platform.exit());
         delay.play();
     }
 
     private void shakeStage(Stage stage) {
         final int shakeDistance = 60;
-        final int shakeCycle = 60; // Number of shakes
-        final int intervalMs = 60; // ms between shakes
+        final int shakeCycle = 60;
+        final int intervalMs = 60;
         double originalX = stage.getX();
         double originalY = stage.getY();
 
         Timeline timeline = new Timeline();
 
         for (int i = 0; i < shakeCycle; i++) {
-            int finalI = i;
             KeyFrame keyFrame = new KeyFrame(Duration.millis(i * intervalMs), event -> {
                 double offsetX = (Math.random() - 0.5) * 2 * shakeDistance;
                 double offsetY = (Math.random() - 0.5) * 2 * shakeDistance;
@@ -659,7 +652,7 @@ public class BattleManager extends Application {
         timeline.play();
     }
 
-public static void main(String[] args) {
+    public static void main(String[] args) {
         launch(args);
     }
 }

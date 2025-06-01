@@ -5,10 +5,6 @@ public class Player {
     private String name;
     private int level;
     private IntegerProperty hp = new SimpleIntegerProperty(100);
-    private int Hp;
-    Player(String name) {
-        this.name = name;
-    }
 
     Player(String name, int hp, int level) {
         this.hp.set(hp);
@@ -44,8 +40,8 @@ public class Player {
 
     public void getdmg(int dmg) {
         hp.set(hp.get() - dmg);
-        if (hp.get() <= 0) {
-            System.out.println("You died...");
-        }
+//        if (hp.get() <= 0) {
+//            System.out.println("You died...");
+//        }
     }
 }
