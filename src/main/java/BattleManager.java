@@ -46,7 +46,7 @@ public class BattleManager extends Application {
     Button talkButton = new Button("TALK");
     Alastor alastor = new Alastor(100);
     Item atkUp = new Item(player);
-    Label hpLabel = new Label(atkUp.getHealCount().get()+"");
+    Label hpLabel ;
 
 
     @Override
@@ -71,6 +71,7 @@ public class BattleManager extends Application {
         Text playerLevelText = new Text("Lv. " + player.getLevel());
         playerLevelText.setFill(Color.WHITE);
         playerLevelText.getStyleClass().add("game-label");
+
 
         battleBox = new Rectangle(500, 300);
         battleBox.setStroke(Color.WHITE);
@@ -195,6 +196,7 @@ public class BattleManager extends Application {
             heart.setVisible(false);
             item_options_visibility(true);
             talk_options_visibility(false);
+            hpLabel.setVisible(true);
         });
 
 
@@ -211,12 +213,10 @@ public class BattleManager extends Application {
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
         heal = createTalkOption("Heal", scene, 1);
-
+        hpLabel= createLable("3",scene,1);
         heal.setOnAction(e -> {
             healpotion.hpUp();
             handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
-            createLabel(hpLabel,scene,1);
-
 
         });
         t_option1.setOnAction(e -> {
@@ -375,16 +375,22 @@ public class BattleManager extends Application {
         btn.layoutYProperty().bind(battleBox.yProperty().add(30 + index * 50));
         return btn;
     }
-    private Label createLabel(Label l, Scene scene, int index) {
-        l.setPrefSize(200, 40);
-        l.getStyleClass().add("talk-option");
-      //  l.setVisible(false);
-        l.layoutXProperty().bind(battleBox.xProperty().add(
-                battleBox.widthProperty().subtract(l.prefWidthProperty()).divide(2)
-        ));
-        l.layoutYProperty().bind(battleBox.yProperty().add(30 + index * 50));
-        return l;
+    private Label createLable(String labelText,Scene scene, int index) {
+
+
+        Label label = new Label(labelText);
+       // label.setVisible(false);
+        label.setPrefSize(30, 5);
+        label.getStyleClass().add("circular-label");
+        label.layoutXProperty().bind(battleBox.xProperty().add(
+                battleBox.widthProperty().subtract(label.prefWidthProperty()).divide(2)).subtract(55));
+        label.layoutYProperty().bind(battleBox.yProperty().add(40+ index * 50));
+        return label;
+
+
+
     }
+
 
     private void talk_options_visibility(boolean isVisible) {
         t_option1.setVisible(isVisible);
@@ -394,12 +400,14 @@ public class BattleManager extends Application {
 
     private void item_options_visibility(boolean isVisible) {
         heal.setVisible(isVisible);
+
     }
 
     private void options_visibility(Button f, Button t, Button i, boolean isVisible) {
         f.setVisible(isVisible);
         t.setVisible(isVisible);
         i.setVisible(isVisible);
+
     }
 private void handlePlayerChoiceOne(){
     options_visibility(fightButton, talkButton, itemButton, true);

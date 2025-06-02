@@ -49,3 +49,11 @@
     -fx-font-family: "Consolas";
     -fx-font-weight: bold;
 }
+.circular-label {
+    -fx-background-color: #ffffff; /* or any color */
+    -fx-border-color: #000000;
+    -fx-border-radius: 30; /* Half of 60 */
+    -fx-background-radius: 30;
+    -fx-font-size: 14px;
+    -fx-alignment: center;
+}
