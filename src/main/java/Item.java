@@ -1,6 +1,10 @@
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+
 public class Item {
     public Integer atkUp;
     private Player player;
+    IntegerProperty healCount = new SimpleIntegerProperty(3);
 
     public Item(Player player) {
         this.player = player;
@@ -13,6 +17,10 @@ public class Item {
             player.setHp(player.gethp() + 20);
         }
     }
+    public IntegerProperty getHealCount() {
+        return healCount;
+    }
+
     public int atkUp(int dmg){
         return dmg+=5;
     }

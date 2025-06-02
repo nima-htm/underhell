@@ -46,6 +46,8 @@ public class BattleManager extends Application {
     Button talkButton = new Button("TALK");
     Alastor alastor = new Alastor(100);
     Item atkUp = new Item(player);
+    Label hpLabel = new Label(atkUp.getHealCount().get()+"");
+
 
     @Override
     public void start(Stage stage) {
@@ -209,9 +211,12 @@ public class BattleManager extends Application {
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
         heal = createTalkOption("Heal", scene, 1);
+
         heal.setOnAction(e -> {
             healpotion.hpUp();
             handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
+            createLabel(hpLabel,scene,1);
+
 
         });
         t_option1.setOnAction(e -> {
@@ -225,6 +230,11 @@ public class BattleManager extends Application {
             handlePlayerChoiceTwo(battleBox, root, player, "You stay silent. The air grows heavy.");
         });
 
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.SHIFT) {
+                handlePlayerChoiceOne();
+            }
+        });
 
         Rectangle dialogueBackground = new Rectangle();
         dialogueBackground.widthProperty().bind(scene.widthProperty().multiply(0.15));
@@ -248,15 +258,23 @@ public class BattleManager extends Application {
 
         root.getChildren().addAll(
                 villainImage,
-                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame,
+                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame,hpLabel,
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp,
                 t_option1, t_option2, t_option3
         );
-        GameBeginningMethods();
+     //  GameBeginningMethods();
 
 
         final Set<KeyCode> activeKeys = new HashSet<>();
-        scene.setOnKeyPressed(event -> activeKeys.add(event.getCode()));
+        scene.setOnKeyPressed(event -> {
+            if (activeKeys.add(event.getCode())) {
+                if (event.getCode() == KeyCode.SHIFT) {
+                    System.out.println("shift pressed");
+                    handlePlayerChoiceOne();
+                }
+            }
+        });
+
         scene.setOnKeyReleased(event -> activeKeys.remove(event.getCode()));
 
         AnimationTimer movement = new AnimationTimer() {
@@ -357,6 +375,16 @@ public class BattleManager extends Application {
         btn.layoutYProperty().bind(battleBox.yProperty().add(30 + index * 50));
         return btn;
     }
+    private Label createLabel(Label l, Scene scene, int index) {
+        l.setPrefSize(200, 40);
+        l.getStyleClass().add("talk-option");
+      //  l.setVisible(false);
+        l.layoutXProperty().bind(battleBox.xProperty().add(
+                battleBox.widthProperty().subtract(l.prefWidthProperty()).divide(2)
+        ));
+        l.layoutYProperty().bind(battleBox.yProperty().add(30 + index * 50));
+        return l;
+    }
 
     private void talk_options_visibility(boolean isVisible) {
         t_option1.setVisible(isVisible);
@@ -373,7 +401,12 @@ public class BattleManager extends Application {
         t.setVisible(isVisible);
         i.setVisible(isVisible);
     }
-
+private void handlePlayerChoiceOne(){
+    options_visibility(fightButton, talkButton, itemButton, true);
+    talk_options_visibility(false);
+    item_options_visibility(false);
+    heart.setVisible(true);
+}
     private void handlePlayerChoiceTwo(Rectangle r, Pane p, Player P, String s) {
         talk_options_visibility(false);
         options_visibility(fightButton, talkButton, itemButton, false);
@@ -577,9 +610,9 @@ public class BattleManager extends Application {
 
         String[] dialogues = {
                 "Welcome to M Y H E L L <<<<<<<:::::: ",
-                "You gonna Die soon",
+                "You're gonna Die soon",
                 "Or... Maybe we can make a deal...",
-                "A trade based on your S O U L <: "
+                "A trade based on your \nS O U L <: "
         };
 
         double delayBetween = 2.5;
