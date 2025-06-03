@@ -46,13 +46,13 @@ public class BattleManager extends Application {
     Button talkButton = new Button("TALK");
     Alastor alastor = new Alastor(100);
     Item atkUp = new Item(player);
+    Item healpotion = new Item(player);
     Label hpLabel = new Label("");
 
 
     @Override
     public void start(Stage stage) {
         alastor.setPlayer(player);
-        Item healpotion = new Item(player);
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
         Scene scene = new Scene(root, 500, 450, Color.BLUE);
@@ -214,18 +214,17 @@ public class BattleManager extends Application {
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
         heal = createTalkOption("Heal", scene, 1);
-        hpLabel = createLable(atkUp.getHealCount().get() + "", scene, 1);
+        hpLabel = createLable(healpotion.getHealCount().get() + "", scene, 1);
 
         heal.setOnAction(e -> {
 
-            if (atkUp.getHealCount().get() > 0) {
-                atkUp.healuse();
-                hpLabel.setText(atkUp.getHealCount().get() + "");
+            if (healpotion.getHealCount().get() > 0 &&player.getHp().get()<100  &&player.getHp().get()>0  ) {
+                healpotion.healuse();
+                hpLabel.setText(healpotion.getHealCount().get() + "");
                 healpotion.hpUp();
                 handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
             }
-         else {hpLabel.setText("0");}
-
+            hpLabel.setText(healpotion.getHealCount().get() + "");
         });
         t_option1.setOnAction(e -> {
 
@@ -393,7 +392,7 @@ public class BattleManager extends Application {
         label.layoutXProperty().bind(battleBox.xProperty().add(
                 battleBox.widthProperty().subtract(label.prefWidthProperty()).divide(2)).subtract(55));
         label.layoutYProperty().bind(battleBox.yProperty().add(40 + index * 50));
-        hpLabel.textProperty().bind(atkUp.getHealCount().asString());
+        hpLabel.textProperty().bind(healpotion.getHealCount().asString());
 
         return label;
 
