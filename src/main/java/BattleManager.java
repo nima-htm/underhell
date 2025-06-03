@@ -46,7 +46,7 @@ public class BattleManager extends Application {
     Button talkButton = new Button("TALK");
     Alastor alastor = new Alastor(100);
     Item atkUp = new Item(player);
-    Label hpLabel ;
+    Label hpLabel = new Label("");
 
 
     @Override
@@ -207,16 +207,24 @@ public class BattleManager extends Application {
             heart.setVisible(false);
             talk_options_visibility(true);
             item_options_visibility(false);
+            hpLabel.setVisible(false);
         });
 
         t_option1 = createTalkOption("Plead", scene, 0);
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
         heal = createTalkOption("Heal", scene, 1);
-        hpLabel= createLable("3",scene,1);
+        hpLabel = createLable(atkUp.getHealCount().get() + "", scene, 1);
+
         heal.setOnAction(e -> {
-            healpotion.hpUp();
-            handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
+
+            if (atkUp.getHealCount().get() > 0) {
+                atkUp.healuse();
+                hpLabel.setText(atkUp.getHealCount().get() + "");
+                healpotion.hpUp();
+                handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
+            }
+         else {hpLabel.setText("0");}
 
         });
         t_option1.setOnAction(e -> {
@@ -258,11 +266,11 @@ public class BattleManager extends Application {
 
         root.getChildren().addAll(
                 villainImage,
-                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame,hpLabel,
+                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp,
                 t_option1, t_option2, t_option3
         );
-     //  GameBeginningMethods();
+        //  GameBeginningMethods();
 
 
         final Set<KeyCode> activeKeys = new HashSet<>();
@@ -305,7 +313,7 @@ public class BattleManager extends Application {
         stage.show();
         player.getHp().addListener((observable, oldValue, newValue) -> {
             if (newValue.intValue() <= 0) {
-                gameOver(stage);
+                // gameOver(stage);
             }
         });
 
@@ -375,18 +383,19 @@ public class BattleManager extends Application {
         btn.layoutYProperty().bind(battleBox.yProperty().add(30 + index * 50));
         return btn;
     }
-    private Label createLable(String labelText,Scene scene, int index) {
 
+    private Label createLable(String labelText, Scene scene, int index) {
 
         Label label = new Label(labelText);
-       // label.setVisible(false);
+        label.setVisible(false);
         label.setPrefSize(30, 5);
         label.getStyleClass().add("circular-label");
         label.layoutXProperty().bind(battleBox.xProperty().add(
                 battleBox.widthProperty().subtract(label.prefWidthProperty()).divide(2)).subtract(55));
-        label.layoutYProperty().bind(battleBox.yProperty().add(40+ index * 50));
-        return label;
+        label.layoutYProperty().bind(battleBox.yProperty().add(40 + index * 50));
+        hpLabel.textProperty().bind(atkUp.getHealCount().asString());
 
+        return label;
 
 
     }
@@ -401,21 +410,27 @@ public class BattleManager extends Application {
     private void item_options_visibility(boolean isVisible) {
         heal.setVisible(isVisible);
 
+
     }
 
     private void options_visibility(Button f, Button t, Button i, boolean isVisible) {
         f.setVisible(isVisible);
         t.setVisible(isVisible);
         i.setVisible(isVisible);
+        heart.setVisible(isVisible);
+    }
+
+    private void handlePlayerChoiceOne() {
+        options_visibility(fightButton, talkButton, itemButton, true);
+        talk_options_visibility(false);
+        item_options_visibility(false);
+        hpLabel.setVisible(false);
+        heart.setVisible(true);
 
     }
-private void handlePlayerChoiceOne(){
-    options_visibility(fightButton, talkButton, itemButton, true);
-    talk_options_visibility(false);
-    item_options_visibility(false);
-    heart.setVisible(true);
-}
+
     private void handlePlayerChoiceTwo(Rectangle r, Pane p, Player P, String s) {
+        hpLabel.setVisible(false);
         talk_options_visibility(false);
         options_visibility(fightButton, talkButton, itemButton, false);
         showDialogue(s);
@@ -442,7 +457,7 @@ private void handlePlayerChoiceOne(){
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
-                heart.setVisible(false);
+                heart.setVisible(true);
             });
             resume.play();
         });
