@@ -218,14 +218,13 @@ public class BattleManager extends Application {
 
         heal.setOnAction(e -> {
 
-            if (atkUp.getHealCount().get() > 0) {
+            if (atkUp.getHealCount().get() > 0 &&player.getHp().get()<100 ) {
                 atkUp.healuse();
                 hpLabel.setText(atkUp.getHealCount().get() + "");
                 healpotion.hpUp();
                 handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
             }
-         else {hpLabel.setText("0");}
-
+            hpLabel.setText(atkUp.getHealCount().get() + "");
         });
         t_option1.setOnAction(e -> {
 
