@@ -217,7 +217,6 @@ public class BattleManager extends Application {
         hpLabel = createLable(healpotion.getHealCount().get() + "", scene, 1);
 
         heal.setOnAction(e -> {
-
             if (healpotion.getHealCount().get() > 0 &&player.getHp().get()<100  &&player.getHp().get()>0  ) {
                 healpotion.healuse();
                 hpLabel.setText(healpotion.getHealCount().get() + "");
