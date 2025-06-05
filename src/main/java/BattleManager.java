@@ -178,7 +178,13 @@ public class BattleManager extends Application {
             bossFightPane[0] = BossFight(() -> {
                 alastor.setHp(villainHP[0]);
                 currentState = GameState.ENEMY_TURN;
-                handlePlayerChoiceTwo(battleBox, root, player, "You dare to stand against me?!\nWretched human soul\nReturn to where you came from!");
+                showDialogue("You dare to stand against me?!\nWretched human ",6);
+                PauseTransition pause = new PauseTransition(Duration.seconds(3));
+                pause.setOnFinished(e2 -> {
+                    handlePlayerChoiceTwo(battleBox, root, player, "\nReturn to where you came from!");
+                });
+                pause.play();
+
                 ((Pane) fightButton.getScene().getRoot()).getChildren().remove(bossFightPane[0]);
 
                 battleBox.setOpacity(1);
@@ -302,8 +308,7 @@ public class BattleManager extends Application {
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
-        //  GameBeginningMethods();
-
+          GameBeginningMethods();
 
         final Set<KeyCode> activeKeys = new HashSet<>();
         scene.setOnKeyPressed(event -> {
@@ -344,7 +349,7 @@ public class BattleManager extends Application {
         stage.show();
         player.getHp().addListener((observable, oldValue, newValue) -> {
             if (newValue.intValue() <= 0) {
-                // gameOver(stage);
+                 gameOver(stage);
             }
         });
 
