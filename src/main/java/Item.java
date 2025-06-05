@@ -2,13 +2,23 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
 public class Item {
+    private int atkInUse=0;
     public Integer atkUp;
     private Player player;
     IntegerProperty healCount = new SimpleIntegerProperty(3);
     IntegerProperty atkCount = new SimpleIntegerProperty(3);
 
+
     public Item(Player player) {
         this.player = player;
+    }
+
+    public void setAtkInUse(int atkInUse) {
+        this.atkInUse = atkInUse;
+    }
+
+    public int getAtkInUse() {
+        return atkInUse;
     }
 
     public void hpUp() {
@@ -31,7 +41,7 @@ public class Item {
         this.healCount.set(healCount.get() - 1);
     }
 
-    public void atkuse(){
+    public void atkuse() {
         this.atkCount.set(atkCount.get() - 1);
     }
 
@@ -39,7 +49,7 @@ public class Item {
         return atkCount;
     }
 
-   public void atkUp(int a , int b) {
-        player.DamageUp(a,b);
-   }
+    public void atkUp(int a, int b) {
+        player.DamageUp(a, b);
+    }
 }

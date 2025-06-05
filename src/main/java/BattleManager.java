@@ -39,7 +39,7 @@ public class BattleManager extends Application {
     private ImageView villainImage;
     private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
     private Button t_option1, t_option2, t_option3;
-    private Button heal ,BoostATK;
+    private Button heal, BoostATK;
     Player player = new Player("Maria", 100, 1);
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
@@ -159,7 +159,14 @@ public class BattleManager extends Application {
             options_visibility(fightButton, talkButton, itemButton, false);
             heart.setVisible(false);
 
-            ArrayList<Integer> damages = player.getDamages();
+            ArrayList<Integer> damages;
+            if (atkUp.getAtkInUse() == 1) {
+                damages = player.getDamages();
+                atkUp.setAtkInUse(0);
+            } else {
+                player.setDamage(5, 10);
+                damages = player.getDamages();
+            }
             int[] villainHP = {alastor.getHp()};
             final Pane[] bossFightPane = new Pane[1];
 
@@ -217,20 +224,21 @@ public class BattleManager extends Application {
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
         heal = createTalkOption("Heal", scene, 1);
-        hpLabel = createLable(healpotion.getHealCount().get() + "", scene,1,hpLabel);
-        BoostATK =  createTalkOption(" BoostATK", scene, 2);
-        atkLabel = createLable(atkUp.getAtkCount().get()+"",scene,2,atkLabel);
+        hpLabel = createLable(healpotion.getHealCount().get() + "", scene, 1, hpLabel);
+        BoostATK = createTalkOption(" BoostATK", scene, 2);
+        atkLabel = createLable(atkUp.getAtkCount().get() + "", scene, 2, atkLabel);
         BoostATK.setOnAction(e -> {
-            if (atkUp.getHealCount().get() > 0  ) {
+            if (atkUp.getHealCount().get() > 0) {
+                atkUp.setAtkInUse(1);
                 atkUp.atkuse();
                 atkLabel.setText(atkUp.getAtkCount().get() + "");
-                atkUp.atkUp(15,20);
+                atkUp.atkUp(15, 20);
                 handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
             }
             atkLabel.setText(atkUp.getAtkCount().get() + "");
         });
         heal.setOnAction(e -> {
-            if (healpotion.getHealCount().get() > 0 &&player.getHp().get()<100  &&player.getHp().get()>0  ) {
+            if (healpotion.getHealCount().get() > 0 && player.getHp().get() < 100 && player.getHp().get() > 0) {
                 healpotion.healuse();
                 hpLabel.setText(healpotion.getHealCount().get() + "");
                 healpotion.hpUp();
@@ -272,7 +280,7 @@ public class BattleManager extends Application {
         root.getChildren().addAll(
                 villainImage,
                 battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,
-                fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp,BoostATK, atkLabel,
+                fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
         //  GameBeginningMethods();
@@ -388,7 +396,7 @@ public class BattleManager extends Application {
         return btn;
     }
 
-    private Label createLable(String labelText, Scene scene, int index,Label l) {
+    private Label createLable(String labelText, Scene scene, int index, Label l) {
 
         Label label = new Label(labelText);
         label.setVisible(false);
