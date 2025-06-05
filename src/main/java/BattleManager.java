@@ -39,7 +39,7 @@ public class BattleManager extends Application {
     private ImageView villainImage;
     private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
     private Button t_option1, t_option2, t_option3;
-    private Button heal;
+    private Button heal ,BoostATK;
     Player player = new Player("Maria", 100, 1);
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
@@ -48,7 +48,7 @@ public class BattleManager extends Application {
     Item atkUp = new Item(player);
     Item healpotion = new Item(player);
     Label hpLabel = new Label("");
-
+    Label atkLabel = new Label("");
 
     @Override
     public void start(Stage stage) {
@@ -159,7 +159,7 @@ public class BattleManager extends Application {
             options_visibility(fightButton, talkButton, itemButton, false);
             heart.setVisible(false);
 
-            ArrayList<Integer> damages = Damages();
+            ArrayList<Integer> damages = player.getDamages();
             int[] villainHP = {alastor.getHp()};
             final Pane[] bossFightPane = new Pane[1];
 
@@ -197,6 +197,8 @@ public class BattleManager extends Application {
             item_options_visibility(true);
             talk_options_visibility(false);
             hpLabel.setVisible(true);
+            atkLabel.setVisible(true);
+            BoostATK.setVisible(true);
         });
 
 
@@ -208,14 +210,25 @@ public class BattleManager extends Application {
             talk_options_visibility(true);
             item_options_visibility(false);
             hpLabel.setVisible(false);
+            atkLabel.setVisible(false);
         });
 
         t_option1 = createTalkOption("Plead", scene, 0);
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
         heal = createTalkOption("Heal", scene, 1);
-        hpLabel = createLable(healpotion.getHealCount().get() + "", scene, 1);
-
+        hpLabel = createLable(healpotion.getHealCount().get() + "", scene,1,hpLabel);
+        BoostATK =  createTalkOption(" BoostATK", scene, 2);
+        atkLabel = createLable(atkUp.getAtkCount().get()+"",scene,2,atkLabel);
+        BoostATK.setOnAction(e -> {
+            if (atkUp.getHealCount().get() > 0  ) {
+                atkUp.atkuse();
+                atkLabel.setText(atkUp.getAtkCount().get() + "");
+                atkUp.atkUp(15,20);
+                handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
+            }
+            atkLabel.setText(atkUp.getAtkCount().get() + "");
+        });
         heal.setOnAction(e -> {
             if (healpotion.getHealCount().get() > 0 &&player.getHp().get()<100  &&player.getHp().get()>0  ) {
                 healpotion.healuse();
@@ -234,12 +247,6 @@ public class BattleManager extends Application {
         });
         t_option3.setOnAction(e -> {
             handlePlayerChoiceTwo(battleBox, root, player, "You stay silent. The air grows heavy.");
-        });
-
-        scene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.SHIFT) {
-                handlePlayerChoiceOne();
-            }
         });
 
         Rectangle dialogueBackground = new Rectangle();
@@ -265,7 +272,7 @@ public class BattleManager extends Application {
         root.getChildren().addAll(
                 villainImage,
                 battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,
-                fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp,
+                fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp,BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
         //  GameBeginningMethods();
@@ -275,7 +282,6 @@ public class BattleManager extends Application {
         scene.setOnKeyPressed(event -> {
             if (activeKeys.add(event.getCode())) {
                 if (event.getCode() == KeyCode.SHIFT) {
-                    System.out.println("shift pressed");
                     handlePlayerChoiceOne();
                 }
             }
@@ -382,7 +388,7 @@ public class BattleManager extends Application {
         return btn;
     }
 
-    private Label createLable(String labelText, Scene scene, int index) {
+    private Label createLable(String labelText, Scene scene, int index,Label l) {
 
         Label label = new Label(labelText);
         label.setVisible(false);
@@ -391,7 +397,7 @@ public class BattleManager extends Application {
         label.layoutXProperty().bind(battleBox.xProperty().add(
                 battleBox.widthProperty().subtract(label.prefWidthProperty()).divide(2)).subtract(55));
         label.layoutYProperty().bind(battleBox.yProperty().add(40 + index * 50));
-        hpLabel.textProperty().bind(healpotion.getHealCount().asString());
+        l.textProperty().bind(healpotion.getHealCount().asString());
 
         return label;
 
@@ -407,6 +413,7 @@ public class BattleManager extends Application {
 
     private void item_options_visibility(boolean isVisible) {
         heal.setVisible(isVisible);
+        BoostATK.setVisible(isVisible);
 
 
     }
@@ -423,12 +430,14 @@ public class BattleManager extends Application {
         talk_options_visibility(false);
         item_options_visibility(false);
         hpLabel.setVisible(false);
+        atkLabel.setVisible(false);
         heart.setVisible(true);
 
     }
 
     private void handlePlayerChoiceTwo(Rectangle r, Pane p, Player P, String s) {
         hpLabel.setVisible(false);
+        atkLabel.setVisible(false);
         talk_options_visibility(false);
         options_visibility(fightButton, talkButton, itemButton, false);
         showDialogue(s);
@@ -581,13 +590,6 @@ public class BattleManager extends Application {
         return root;
     }
 
-    public ArrayList<Integer> Damages() {
-        ArrayList<Integer> damage = new ArrayList<>();
-        int dmg = 5;
-        damage.add(5);
-        damage.add(10);
-        return damage;
-    }
 
     private void playTransition(Node from, Node to, Runnable onCollapseFinished) {
         Timeline collapse = new Timeline(

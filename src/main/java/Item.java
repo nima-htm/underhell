@@ -5,7 +5,7 @@ public class Item {
     public Integer atkUp;
     private Player player;
     IntegerProperty healCount = new SimpleIntegerProperty(3);
-
+    IntegerProperty atkCount = new SimpleIntegerProperty(3);
 
     public Item(Player player) {
         this.player = player;
@@ -31,7 +31,15 @@ public class Item {
         this.healCount.set(healCount.get() - 1);
     }
 
-    public int atkUp(int dmg) {
-        return dmg += 5;
+    public void atkuse(){
+        this.atkCount.set(atkCount.get() - 1);
     }
+
+    public IntegerProperty getAtkCount() {
+        return atkCount;
+    }
+
+   public void atkUp(int a , int b) {
+        player.DamageUp(a,b);
+   }
 }
