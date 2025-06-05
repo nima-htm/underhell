@@ -178,7 +178,7 @@ public class BattleManager extends Application {
             bossFightPane[0] = BossFight(() -> {
                 alastor.setHp(villainHP[0]);
                 currentState = GameState.ENEMY_TURN;
-                handlePlayerChoiceTwo(battleBox, root, player, "Ahh, that hurts, you gotta pay for that!");
+                handlePlayerChoiceTwo(battleBox, root, player, "You dare to stand against me?!\nWretched human soul\nReturn to where you came from!");
                 ((Pane) fightButton.getScene().getRoot()).getChildren().remove(bossFightPane[0]);
 
                 battleBox.setOpacity(1);
@@ -233,7 +233,7 @@ public class BattleManager extends Application {
                 atkUp.atkuse();
                 atkLabel.setText(atkUp.getAtkCount().get() + "");
                 atkUp.atkUp(15, 20);
-                handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
+                handlePlayerChoiceTwo(battleBox, root, player, "Heh\nAs if it makes any difference");
             }
             atkLabel.setText(atkUp.getAtkCount().get() + "");
         });
@@ -242,19 +242,38 @@ public class BattleManager extends Application {
                 healpotion.healuse();
                 hpLabel.setText(healpotion.getHealCount().get() + "");
                 healpotion.hpUp();
-                handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
+                handlePlayerChoiceTwo(battleBox, root, player, "Postponing your death for a few seconds?\nHow foolish");
             }
             hpLabel.setText(healpotion.getHealCount().get() + "");
         });
         t_option1.setOnAction(e -> {
+            talk_options_visibility(false);
+            options_visibility(fightButton, talkButton, itemButton, false);
+            showDialogue("How childish\nYou may leave...for now", 2);
+            PauseTransition pause = new PauseTransition(Duration.seconds(4));
+            pause.setOnFinished(e2 -> {
+                handlePlayerChoiceTwo(battleBox, root, player, "HAHAHAAA");
+            });
+            pause.play();
 
-            handlePlayerChoiceTwo(battleBox, root, player, "You plead. The villain chuckles.");
         });
+
         t_option2.setOnAction(e -> {
-            handlePlayerChoiceTwo(battleBox, root, player, "You insult the villain. Its eyes glow red.");
+            showDialogue("Lowly peasent", 2);
+            PauseTransition pause = new PauseTransition(Duration.seconds(2));
+            pause.setOnFinished(e2 -> {
+                handlePlayerChoiceTwo(battleBox, root, player, "Know your place!  ");
+            });
+            pause.play();
         });
         t_option3.setOnAction(e -> {
-            handlePlayerChoiceTwo(battleBox, root, player, "You stay silent. The air grows heavy.");
+            showDialogue("You stay silent. The air grows heavy.", 2);
+            PauseTransition pause = new PauseTransition(Duration.seconds(2));
+            pause.setOnFinished(e2 -> {
+                handlePlayerChoiceTwo(battleBox, root, player, "Hmph\nDon't waste my time");
+            });
+            pause.play();
+
         });
 
         Rectangle dialogueBackground = new Rectangle();
@@ -339,11 +358,33 @@ public class BattleManager extends Application {
 
     }
 
-    private void showDialogue(String message) {
+    private void showDialogue2(String text, Runnable onFinished) {
+        dialogueText.setText("");  // Clear previous text
+        dialogueBar.setVisible(true);
+        final int[] index = {0};
+
+        Timeline timeline = new Timeline();
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(50), event -> {
+            if (index[0] < text.length()) {
+                dialogueText.setText(dialogueText.getText() + text.charAt(index[0]));
+                index[0]++;
+            } else {
+                timeline.stop();
+                if (onFinished != null) onFinished.run();
+            }
+        });
+
+        timeline.getKeyFrames().add(keyFrame);
+        timeline.setCycleCount(text.length());
+        timeline.play();
+    }
+
+
+    private void showDialogue(String message, int duration) {
         dialogueText.setText(message);
         dialogueBar.setVisible(true);
 
-        PauseTransition pause = new PauseTransition(Duration.seconds(10));
+        PauseTransition pause = new PauseTransition(Duration.seconds(duration));
         pause.setOnFinished(e -> dialogueBar.setVisible(false));
         pause.play();
     }
@@ -448,9 +489,10 @@ public class BattleManager extends Application {
         atkLabel.setVisible(false);
         talk_options_visibility(false);
         options_visibility(fightButton, talkButton, itemButton, false);
-        showDialogue(s);
+        showDialogue(s, 4);
         item_options_visibility(false);
         heart.setVisible(true);
+
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
@@ -651,7 +693,7 @@ public class BattleManager extends Application {
         for (int i = 0; i < dialogues.length; i++) {
             String line = dialogues[i];
             PauseTransition pause = new PauseTransition(Duration.seconds(i * delayBetween));
-            pause.setOnFinished(e -> showDialogue(line));
+            pause.setOnFinished(e -> showDialogue(line, 10));
             pause.play();
         }
 
