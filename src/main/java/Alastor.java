@@ -29,39 +29,56 @@ public class Alastor extends Villain {
     }
 
     public void throwSpearAll() {
-        Image spearImg;
-        try {
-            spearImg = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/spear.png")));
-        } catch (Exception e) {
-            return;
-        }
-
-        int numberOfSpears = 10;
-        double delayBetweenSpears = 1; // Delay in seconds
+        Image spearImg = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/spear.png")));
+        int numberOfSpears = 12;
+        double delayBetweenSpears = 0.7;
         Timeline timeline = new Timeline();
 
         for (int i = 0; i < numberOfSpears; i++) {
             KeyFrame kf = new KeyFrame(Duration.seconds(i * delayBetweenSpears), event -> {
                 ImageView spear = new ImageView(spearImg);
                 spear.setFitWidth(90);
-                spear.setFitHeight(40.);
+                spear.setFitHeight(40);
                 int randomNumberX = 50 + (int) (Math.random() * 801);
                 spear.setLayoutX(randomNumberX);
                 spear.setLayoutY(150);
                 getRoot().getChildren().add(spear);
 
+                javafx.geometry.Point2D tipScene = spear.localToScene(90, 0);
+                Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
+                double heartCenterX = heartBounds.getMinX() + heartBounds.getWidth() / 2;
+                double heartCenterY = heartBounds.getMinY() + heartBounds.getHeight() / 2;
+                double dx = heartCenterX - tipScene.getX();
+                double dy = heartCenterY - tipScene.getY();
+                double angle = Math.toDegrees(Math.atan2(dy, dx));
+                spear.setRotate(angle);
+
+                Line spearHitbox = new Line(0, 40, 90, 0);
+                spearHitbox.setStrokeWidth(4);
+                spearHitbox.setVisible(false);
+                spearHitbox.setLayoutX(spear.getLayoutX());
+                spearHitbox.setLayoutY(spear.getLayoutY());
+                spearHitbox.setRotate(angle);
+                getRoot().getChildren().add(spearHitbox);
+
                 TranslateTransition spearMove = new TranslateTransition(Duration.seconds(1.5), spear);
+                TranslateTransition hitboxMove = new TranslateTransition(Duration.seconds(1.5), spearHitbox);
                 spearMove.setToX(getHeart().getLayoutX() - spear.getLayoutX());
                 spearMove.setToY(getHeart().getLayoutY() - spear.getLayoutY());
+                hitboxMove.setToX(getHeart().getLayoutX() - spear.getLayoutX());
+                hitboxMove.setToY(getHeart().getLayoutY() - spear.getLayoutY());
 
                 spearMove.currentTimeProperty().addListener((ignored, ignoredOld, ignoredNew) -> {
-                    Bounds spearBounds = spear.localToScene(spear.getBoundsInLocal());
-                    Bounds heartBounds = getHeart().localToScene(getHeart().getBoundsInLocal());
-                    if (spearBounds.intersects(heartBounds)) {
+                    Bounds hitboxBounds = spearHitbox.localToScene(spearHitbox.getBoundsInLocal());
+                    Bounds heartBoundsNow = getHeart().localToScene(getHeart().getBoundsInLocal());
+                    Shape intersection = Shape.intersect(spearHitbox, getHeart());
+                    if (hitboxBounds.intersects(heartBoundsNow) && intersection.getBoundsInLocal().getWidth() != -1) {
                         System.out.println("Spear hit the heart!");
-                        p.getdmg(10);
-                        getRoot().getChildren().remove(spear);
+                        p.getdmg(15);
                         spearMove.stop();
+                        hitboxMove.stop();
+                        getRoot().getChildren().remove(spear);
+                        getRoot().getChildren().remove(spearHitbox);
                     }
                 });
 
@@ -69,10 +86,12 @@ public class Alastor extends Villain {
                     if (getRoot().getChildren().contains(spear)) {
                         System.out.println("Spear missed.");
                         getRoot().getChildren().remove(spear);
+                        getRoot().getChildren().remove(spearHitbox);
                     }
                 });
 
                 spearMove.play();
+                hitboxMove.play();
             });
             timeline.getKeyFrames().add(kf);
         }
@@ -84,8 +103,8 @@ public class Alastor extends Villain {
 
     public void Laser(Rectangle battleBox, Pane root, Player p) {
         Random rand = new Random();
-        int numberOfLasers = 60;
-        double delayBetweenLasers = 0.3;
+        int numberOfLasers = 40;
+        double delayBetweenLasers = 0.5;
         Timeline timeline = new Timeline();
         Bounds bounds = battleBox.localToScene(battleBox.getBoundsInLocal());
         double boxX = bounds.getMinX();
@@ -131,21 +150,22 @@ public class Alastor extends Villain {
                 PauseTransition collisionDelay = new PauseTransition(Duration.seconds(1));
                 collisionDelay.setOnFinished(e -> {
                     laser.setStroke(Color.RED);
+                    hitSound.play();
                     DropShadow glow0 = new DropShadow();
                     glow.setColor(Color.DARKRED);
                     glow.setRadius(20);
                     laser.setEffect(glow0);
                     Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
-                    p.getHp().addListener((observable, oldValue, newValue) -> {
-                        if (newValue.intValue() >0) {
-                            hitSound.play();
-                        }
-                    });
+//                    p.getHp().addListener((observable, oldValue, newValue) -> {
+//                        if (newValue.intValue() >0) {
+//                            hitSound.play();
+//                        }
+//                    });
                     if (laserBounds.intersects(heartBounds)) {
                         Shape intersection = Shape.intersect(laser, getHeart());
                         if (intersection.getBoundsInLocal().getWidth() != -1) {
                             System.out.println("Laser hit the heart!");
-                            p.getdmg(20);
+                            p.getdmg(10);
                         }
                     }
                 });

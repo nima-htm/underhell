@@ -5,8 +5,8 @@ public class Item {
     private int atkInUse=0;
     public Integer atkUp;
     private Player player;
-    IntegerProperty healCount = new SimpleIntegerProperty(3);
-    IntegerProperty atkCount = new SimpleIntegerProperty(3);
+    IntegerProperty healCount = new SimpleIntegerProperty(5);
+    IntegerProperty atkCount = new SimpleIntegerProperty(2);
 
 
     public Item(Player player) {
@@ -25,7 +25,7 @@ public class Item {
         if (player.gethp() < 100 && player.gethp() > 80) {
             player.setHp(100);
         } else if (player.gethp() <= 80 && player.gethp() > 0) {
-            player.setHp(player.gethp() + 20);
+            player.setHp(player.gethp() + 30);
         }
     }
 
