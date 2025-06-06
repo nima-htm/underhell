@@ -536,6 +536,7 @@ public class BattleManager extends Application {
         final int RECT_WIDTH = 600;
         final int RECT_HEIGHT = 150;
         final double lineSpeed = 1.5;
+        AudioClip hitSound = new AudioClip(getClass().getResource("/game-over-arcade-6435.mp3").toExternalForm());
 
         Line movingLine = new Line(0, 7, 0, RECT_HEIGHT - 7);
         movingLine.setStroke(Color.WHITE);
@@ -600,6 +601,7 @@ public class BattleManager extends Application {
                 double x = movingLine.getStartX();
                 double center = RECT_WIDTH / 2.0;
                 double distance = Math.abs(x - center);
+                hitSound.play();
 
                 if (distance < 20)
                     Hp[0] -= Damages.get(1);
