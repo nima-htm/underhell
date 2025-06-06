@@ -39,18 +39,20 @@ public class BattleManager extends Application {
     private ImageView villainImage;
     private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
     private Button t_option1, t_option2, t_option3;
-    private Button heal;
+    private Button heal, BoostATK;
     Player player = new Player("Maria", 100, 1);
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
     Button talkButton = new Button("TALK");
     Alastor alastor = new Alastor(100);
     Item atkUp = new Item(player);
+    Item healpotion = new Item(player);
+    Label hpLabel = new Label("");
+    Label atkLabel = new Label("");
 
     @Override
     public void start(Stage stage) {
         alastor.setPlayer(player);
-        Item healpotion = new Item(player);
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
         Scene scene = new Scene(root, 500, 450, Color.BLUE);
@@ -69,6 +71,7 @@ public class BattleManager extends Application {
         Text playerLevelText = new Text("Lv. " + player.getLevel());
         playerLevelText.setFill(Color.WHITE);
         playerLevelText.getStyleClass().add("game-label");
+
 
         battleBox = new Rectangle(500, 300);
         battleBox.setStroke(Color.WHITE);
@@ -156,7 +159,14 @@ public class BattleManager extends Application {
             options_visibility(fightButton, talkButton, itemButton, false);
             heart.setVisible(false);
 
-            ArrayList<Integer> damages = Damages();
+            ArrayList<Integer> damages;
+            if (atkUp.getAtkInUse() == 1) {
+                damages = player.getDamages();
+                atkUp.setAtkInUse(0);
+            } else {
+                player.setDamage(5, 10);
+                damages = player.getDamages();
+            }
             int[] villainHP = {alastor.getHp()};
             final Pane[] bossFightPane = new Pane[1];
 
@@ -168,7 +178,13 @@ public class BattleManager extends Application {
             bossFightPane[0] = BossFight(() -> {
                 alastor.setHp(villainHP[0]);
                 currentState = GameState.ENEMY_TURN;
-                handlePlayerChoiceTwo(battleBox, root, player, "Ahh, that hurts, you gotta pay for that!");
+                showDialogue("You dare to stand against me?!\nWretched human ",6);
+                PauseTransition pause = new PauseTransition(Duration.seconds(3));
+                pause.setOnFinished(e2 -> {
+                    handlePlayerChoiceTwo(battleBox, root, player, "\nReturn to where you came from!");
+                });
+                pause.play();
+
                 ((Pane) fightButton.getScene().getRoot()).getChildren().remove(bossFightPane[0]);
 
                 battleBox.setOpacity(1);
@@ -193,6 +209,9 @@ public class BattleManager extends Application {
             heart.setVisible(false);
             item_options_visibility(true);
             talk_options_visibility(false);
+            hpLabel.setVisible(true);
+            atkLabel.setVisible(true);
+            BoostATK.setVisible(true);
         });
 
 
@@ -203,28 +222,65 @@ public class BattleManager extends Application {
             heart.setVisible(false);
             talk_options_visibility(true);
             item_options_visibility(false);
+            hpLabel.setVisible(false);
+            atkLabel.setVisible(false);
         });
 
         t_option1 = createTalkOption("Plead", scene, 0);
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
         heal = createTalkOption("Heal", scene, 1);
+        hpLabel = createLable(healpotion.getHealCount().get() + "", scene, 1, hpLabel);
+        BoostATK = createTalkOption(" BoostATK", scene, 2);
+        atkLabel = createLable(atkUp.getAtkCount().get() + "", scene, 2, atkLabel);
+        BoostATK.setOnAction(e -> {
+            if (atkUp.getHealCount().get() > 0) {
+                atkUp.setAtkInUse(1);
+                atkUp.atkuse();
+                atkLabel.setText(atkUp.getAtkCount().get() + "");
+                atkUp.atkUp(15, 20);
+                handlePlayerChoiceTwo(battleBox, root, player, "Heh\nAs if it makes any difference");
+            }
+            atkLabel.setText(atkUp.getAtkCount().get() + "");
+        });
         heal.setOnAction(e -> {
-            healpotion.hpUp();
-            handlePlayerChoiceTwo(battleBox, root, player, "Useless~");
-
+            if (healpotion.getHealCount().get() > 0 && player.getHp().get() < 100 && player.getHp().get() > 0) {
+                healpotion.healuse();
+                hpLabel.setText(healpotion.getHealCount().get() + "");
+                healpotion.hpUp();
+                handlePlayerChoiceTwo(battleBox, root, player, "Postponing your death for a few seconds?\nHow foolish");
+            }
+            hpLabel.setText(healpotion.getHealCount().get() + "");
         });
         t_option1.setOnAction(e -> {
+            talk_options_visibility(false);
+            options_visibility(fightButton, talkButton, itemButton, false);
+            showDialogue("How childish\nYou may leave...for now", 2);
+            PauseTransition pause = new PauseTransition(Duration.seconds(4));
+            pause.setOnFinished(e2 -> {
+                handlePlayerChoiceTwo(battleBox, root, player, "HAHAHAAA");
+            });
+            pause.play();
 
-            handlePlayerChoiceTwo(battleBox, root, player, "You plead. The villain chuckles.");
         });
+
         t_option2.setOnAction(e -> {
-            handlePlayerChoiceTwo(battleBox, root, player, "You insult the villain. Its eyes glow red.");
+            showDialogue("Lowly peasent", 2);
+            PauseTransition pause = new PauseTransition(Duration.seconds(2));
+            pause.setOnFinished(e2 -> {
+                handlePlayerChoiceTwo(battleBox, root, player, "Know your place!  ");
+            });
+            pause.play();
         });
         t_option3.setOnAction(e -> {
-            handlePlayerChoiceTwo(battleBox, root, player, "You stay silent. The air grows heavy.");
-        });
+            showDialogue("You stay silent. The air grows heavy.", 2);
+            PauseTransition pause = new PauseTransition(Duration.seconds(2));
+            pause.setOnFinished(e2 -> {
+                handlePlayerChoiceTwo(battleBox, root, player, "Hmph\nDon't waste my time");
+            });
+            pause.play();
 
+        });
 
         Rectangle dialogueBackground = new Rectangle();
         dialogueBackground.widthProperty().bind(scene.widthProperty().multiply(0.15));
@@ -248,15 +304,21 @@ public class BattleManager extends Application {
 
         root.getChildren().addAll(
                 villainImage,
-                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame,
-                fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp,
+                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,
+                fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
-        GameBeginningMethods();
-
+//        GameBeginningMethods();
 
         final Set<KeyCode> activeKeys = new HashSet<>();
-        scene.setOnKeyPressed(event -> activeKeys.add(event.getCode()));
+        scene.setOnKeyPressed(event -> {
+            if (activeKeys.add(event.getCode())) {
+                if (event.getCode() == KeyCode.SHIFT) {
+                    handlePlayerChoiceOne();
+                }
+            }
+        });
+
         scene.setOnKeyReleased(event -> activeKeys.remove(event.getCode()));
 
         AnimationTimer movement = new AnimationTimer() {
@@ -287,7 +349,7 @@ public class BattleManager extends Application {
         stage.show();
         player.getHp().addListener((observable, oldValue, newValue) -> {
             if (newValue.intValue() <= 0) {
-                gameOver(stage);
+                 gameOver(stage);
             }
         });
 
@@ -301,11 +363,33 @@ public class BattleManager extends Application {
 
     }
 
-    private void showDialogue(String message) {
+    private void showDialogue2(String text, Runnable onFinished) {
+        dialogueText.setText("");  // Clear previous text
+        dialogueBar.setVisible(true);
+        final int[] index = {0};
+
+        Timeline timeline = new Timeline();
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(50), event -> {
+            if (index[0] < text.length()) {
+                dialogueText.setText(dialogueText.getText() + text.charAt(index[0]));
+                index[0]++;
+            } else {
+                timeline.stop();
+                if (onFinished != null) onFinished.run();
+            }
+        });
+
+        timeline.getKeyFrames().add(keyFrame);
+        timeline.setCycleCount(text.length());
+        timeline.play();
+    }
+
+
+    private void showDialogue(String message, int duration) {
         dialogueText.setText(message);
         dialogueBar.setVisible(true);
 
-        PauseTransition pause = new PauseTransition(Duration.seconds(10));
+        PauseTransition pause = new PauseTransition(Duration.seconds(duration));
         pause.setOnFinished(e -> dialogueBar.setVisible(false));
         pause.play();
     }
@@ -358,6 +442,23 @@ public class BattleManager extends Application {
         return btn;
     }
 
+    private Label createLable(String labelText, Scene scene, int index, Label l) {
+
+        Label label = new Label(labelText);
+        label.setVisible(false);
+        label.setPrefSize(30, 5);
+        label.getStyleClass().add("circular-label");
+        label.layoutXProperty().bind(battleBox.xProperty().add(
+                battleBox.widthProperty().subtract(label.prefWidthProperty()).divide(2)).subtract(55));
+        label.layoutYProperty().bind(battleBox.yProperty().add(40 + index * 50));
+        l.textProperty().bind(healpotion.getHealCount().asString());
+
+        return label;
+
+
+    }
+
+
     private void talk_options_visibility(boolean isVisible) {
         t_option1.setVisible(isVisible);
         t_option2.setVisible(isVisible);
@@ -366,20 +467,37 @@ public class BattleManager extends Application {
 
     private void item_options_visibility(boolean isVisible) {
         heal.setVisible(isVisible);
+        BoostATK.setVisible(isVisible);
+
+
     }
 
     private void options_visibility(Button f, Button t, Button i, boolean isVisible) {
         f.setVisible(isVisible);
         t.setVisible(isVisible);
         i.setVisible(isVisible);
+        heart.setVisible(isVisible);
+    }
+
+    private void handlePlayerChoiceOne() {
+        options_visibility(fightButton, talkButton, itemButton, true);
+        talk_options_visibility(false);
+        item_options_visibility(false);
+        hpLabel.setVisible(false);
+        atkLabel.setVisible(false);
+        heart.setVisible(true);
+
     }
 
     private void handlePlayerChoiceTwo(Rectangle r, Pane p, Player P, String s) {
+        hpLabel.setVisible(false);
+        atkLabel.setVisible(false);
         talk_options_visibility(false);
         options_visibility(fightButton, talkButton, itemButton, false);
-        showDialogue(s);
+        showDialogue(s, 4);
         item_options_visibility(false);
         heart.setVisible(true);
+
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
@@ -401,7 +519,7 @@ public class BattleManager extends Application {
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
-                heart.setVisible(false);
+                heart.setVisible(true);
             });
             resume.play();
         });
@@ -527,13 +645,6 @@ public class BattleManager extends Application {
         return root;
     }
 
-    public ArrayList<Integer> Damages() {
-        ArrayList<Integer> damage = new ArrayList<>();
-        int dmg = 5;
-        damage.add(5);
-        damage.add(10);
-        return damage;
-    }
 
     private void playTransition(Node from, Node to, Runnable onCollapseFinished) {
         Timeline collapse = new Timeline(
@@ -577,9 +688,9 @@ public class BattleManager extends Application {
 
         String[] dialogues = {
                 "Welcome to M Y H E L L <<<<<<<:::::: ",
-                "You gonna Die soon",
+                "You're gonna Die soon",
                 "Or... Maybe we can make a deal...",
-                "A trade based on your S O U L <: "
+                "A trade based on your \nS O U L <: "
         };
 
         double delayBetween = 2.5;
@@ -587,7 +698,7 @@ public class BattleManager extends Application {
         for (int i = 0; i < dialogues.length; i++) {
             String line = dialogues[i];
             PauseTransition pause = new PauseTransition(Duration.seconds(i * delayBetween));
-            pause.setOnFinished(e -> showDialogue(line));
+            pause.setOnFinished(e -> showDialogue(line, 10));
             pause.play();
         }
 
