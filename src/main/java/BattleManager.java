@@ -501,7 +501,7 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-            int choice = random.nextInt(2);
+            int choice =  random.nextInt(3);
             int sd = switch (choice) {
                 case 0 -> {
                     alastor.throwSpearAll();
@@ -509,6 +509,10 @@ public class BattleManager extends Application {
                 }
                 case 1 -> {
                     alastor.Laser(r, p, P);
+                    yield 19;
+                }
+                case 2 -> {
+                    alastor.runGame(battleBox,heart);
                     yield 19;
                 }
                 default -> 1;
