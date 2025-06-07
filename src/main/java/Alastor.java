@@ -191,7 +191,7 @@ public class Alastor extends Villain {
         timeline.play();
     }
 
-    public void runGame(Rectangle battleBox, Path heart) {
+    public void JumpyHeart(Rectangle battleBox, Path heart) {
         Pane root = getRoot(); // Assumes this was set earlier via setRoot()
         Scene scene = root.getScene();
         double GRAVITY = 0.5, JUMP_STRENGTH = -13, MOVE_SPEED = 5;
