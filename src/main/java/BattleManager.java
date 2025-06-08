@@ -40,7 +40,7 @@ public class BattleManager extends Application {
     private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
     private Button t_option1, t_option2, t_option3;
     private Button heal, BoostATK;
-    Player player = new Player("Maria", 100, 1);
+    Player player = new Player("Maria", 1000000000, 1);
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
     Button talkButton = new Button("TALK");
@@ -518,12 +518,11 @@ public class BattleManager extends Application {
                 default -> 1;
             };
 
-
             PauseTransition resume = new PauseTransition(Duration.seconds(sd + 1));
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
-                heart.setVisible(true);
+                heart.setVisible(false);
             });
             resume.play();
         });

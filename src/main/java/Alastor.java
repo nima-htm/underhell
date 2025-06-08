@@ -166,11 +166,7 @@ public class Alastor extends Villain {
                     glow.setRadius(20);
                     laser.setEffect(glow0);
                     Bounds laserBounds = laser.localToScene(laser.getBoundsInLocal());
-//                    p.getHp().addListener((observable, oldValue, newValue) -> {
-//                        if (newValue.intValue() >0) {
-//                            hitSound.play();
-//                        }
-//                    });
+
                     if (laserBounds.intersects(heartBounds)) {
                         Shape intersection = Shape.intersect(laser, getHeart());
                         if (intersection.getBoundsInLocal().getWidth() != -1) {
@@ -194,7 +190,7 @@ public class Alastor extends Villain {
     public void JumpyHeart(Rectangle battleBox, Path heart) {
         Pane root = getRoot(); // Assumes this was set earlier via setRoot()
         Scene scene = root.getScene();
-        double GRAVITY = 0.5, JUMP_STRENGTH = -13, MOVE_SPEED = 5;
+        double GRAVITY = 0.7, JUMP_STRENGTH = -13, MOVE_SPEED = 3;
         Set<KeyCode> keysPressed = new HashSet<>();
 
         scene.setOnKeyPressed(e -> keysPressed.add(e.getCode()));
@@ -224,7 +220,6 @@ public class Alastor extends Villain {
                 last = now;
                 totalTime += dt;
 
-                // Update bounds each frame to get accurate position
                 Bounds boxInScene = battleBox.localToScene(battleBox.getBoundsInLocal());
                 double minX = boxInScene.getMinX();
                 double maxX = boxInScene.getMaxX();
@@ -244,7 +239,6 @@ public class Alastor extends Villain {
                     return;
                 }
 
-                // Player movement
                 if (keysPressed.contains(KeyCode.A)) heart.setLayoutX(heart.getLayoutX() - MOVE_SPEED);
                 if (keysPressed.contains(KeyCode.D)) heart.setLayoutX(heart.getLayoutX() + MOVE_SPEED);
                 if (keysPressed.contains(KeyCode.SPACE) && canJump[0]) {
@@ -270,7 +264,6 @@ public class Alastor extends Villain {
                     canJump[0] = true;
                 }
 
-                // Spear spawning
                 spawnTimer[0]++;
                 difficultyTimer[0]++;
                 if (spawnTimer[0] % 30 == 0) {
@@ -301,7 +294,7 @@ public class Alastor extends Villain {
                                 root.getChildren().add(spear);
                                 spears.add(spear);
                                 baseYs.add(y);
-                                amplitudes.add(10 + rand.nextDouble() * 20 + spearSpeed[0] * 2);
+                                amplitudes.add(4 + rand.nextDouble() * 4 + spearSpeed[0] * 2);
                                 speeds.add(1 + rand.nextDouble() * 3 + spearSpeed[0] * 0.5);
                                 phases.add(rand.nextDouble() * Math.PI * 2);
                                 times.add(1.0);
@@ -364,7 +357,7 @@ public class Alastor extends Villain {
                                 root.getChildren().add(spear);
                                 spears.add(spear);
                                 baseYs.add(y);
-                                amplitudes.add(10 + rand.nextDouble() * 20 + spearSpeed[0] * 2);
+                                amplitudes.add(4 + rand.nextDouble() * 4 + spearSpeed[0] * 2);
                                 speeds.add(1 + rand.nextDouble() * 3 + spearSpeed[0] * 0.5);
                                 phases.add(rand.nextDouble() * Math.PI * 2);
                                 times.add(1.0);
@@ -385,7 +378,7 @@ public class Alastor extends Villain {
 
                     Bounds spearBounds = spear.getBoundsInParent();
 
-                    // Horizontal move + clamp inside battleBox
+
                     double proposedX = spear.getLayoutX() + spearSpeed[0];
                     if (proposedX + (spearBounds.getMinX() - spear.getLayoutX()) < minX) {
                         proposedX = minX - (spearBounds.getMinX() - spear.getLayoutX());
@@ -394,7 +387,7 @@ public class Alastor extends Villain {
                     }
                     spear.setLayoutX(proposedX);
 
-                    // Vertical move + clamp inside battleBox
+
                     double proposedY;
                     if (amplitudes.get(i) == 0.0 && speeds.get(i) == 0.0) {
                         proposedY = spear.getLayoutY() + spearSpeed[0] * 1.5;
@@ -408,15 +401,14 @@ public class Alastor extends Villain {
                     }
                     spear.setLayoutY(proposedY);
 
-                    // Remove spears that go far outside on the right
                     if (spear.getLayoutX() > maxX + 50) {
                         toRemove.add(i);
                     }
 
-                    // Collision with heart
+
                     if (spear.getBoundsInParent().intersects(heart.getBoundsInParent())) {
                         System.out.println("Hit by spear!");
-                        p.getdmg(1); // Replace with actual player object reference
+                        p.getdmg(1);
                         DropShadow flash = new DropShadow();
                         flash.setColor(Color.RED);
                         flash.setRadius(10);
@@ -436,6 +428,7 @@ public class Alastor extends Villain {
                     speeds.remove(idx);
                     phases.remove(idx);
                     times.remove(idx);
+                    heart.setVisible(false);
                 }
             }
         };
