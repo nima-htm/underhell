@@ -75,7 +75,7 @@ public class BattleManager extends Application {
         playerHp.textProperty().bind(Bindings.concat(
                 " HP:", player.getHp().asString()));
         Text playerAtk = new Text("Atk Boosted");
-        playerAtk.setFill(Color.WHITE);
+        playerAtk.setFill(Color.BLUE);
         playerAtk.getStyleClass().add("game-label");
 
         playerHp.setFill(Color.WHITE);
