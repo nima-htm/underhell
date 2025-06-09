@@ -73,6 +73,9 @@ public class BattleManager extends Application {
         Text playerHp = new Text();
         playerHp.textProperty().bind(Bindings.concat(
                 " HP:", player.getHp().asString()));
+        Text playerAtk = new Text("Atk Boosted");
+        playerAtk.setFill(Color.BLUE);
+        playerAtk.getStyleClass().add("game-label");
 
         playerHp.setFill(Color.WHITE);
         playerHp.getStyleClass().add("game-label");
@@ -127,10 +130,11 @@ public class BattleManager extends Application {
         playerNameText.xProperty().bind(playerHPFrame.xProperty().subtract(120));
         playerHp.yProperty().bind(playerHPFrame.yProperty().add(10));
         playerHp.xProperty().bind(playerHPFrame.xProperty().subtract(70));
-
         playerLevelText.yProperty().bind(playerHPFrame.yProperty().add(10));
         playerLevelText.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(20));
-
+        playerAtk.yProperty().bind(playerHPFrame.yProperty().add(10));
+        playerAtk.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(70));
+        playerAtk.setVisible(false);
 
         villainImg = new Image(getClass().getResource("/villain.png").toExternalForm());
         villainImage = new ImageView(villainImg);
@@ -179,6 +183,7 @@ public class BattleManager extends Application {
 
             ArrayList<Integer> damages;
             if (atkUp.getAtkInUse() == 1) {
+                playerAtk.setVisible(false);
                 damages = player.getDamages();
                 atkUp.setAtkInUse(0);
             } else {
@@ -257,6 +262,7 @@ public class BattleManager extends Application {
         atkLabel = createLable(atkUp.getAtkCount().get() + "", scene, 2, atkLabel);
         BoostATK.setOnAction(e -> {
             if (atkUp.getHealCount().get() > 0) {
+                playerAtk.setVisible(true);
                 ItemClicked.play();
                 atkUp.setAtkInUse(1);
                 atkUp.atkuse();
@@ -331,7 +337,7 @@ public class BattleManager extends Application {
 
         root.getChildren().addAll(
                 villainImage, villainImage_hurt,
-                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,
+                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,playerAtk,
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
