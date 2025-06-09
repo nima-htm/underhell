@@ -40,7 +40,7 @@ public class BattleManager extends Application {
     private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
     private Button t_option1, t_option2, t_option3;
     private Button heal, BoostATK;
-    Player player = new Player("Maria", 1000000000, 1);
+    Player player = new Player("Maria", 100, 1);
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
     Button talkButton = new Button("TALK");
@@ -363,28 +363,6 @@ public class BattleManager extends Application {
 
     }
 
-    private void showDialogue2(String text, Runnable onFinished) {
-        dialogueText.setText("");  // Clear previous text
-        dialogueBar.setVisible(true);
-        final int[] index = {0};
-
-        Timeline timeline = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(50), event -> {
-            if (index[0] < text.length()) {
-                dialogueText.setText(dialogueText.getText() + text.charAt(index[0]));
-                index[0]++;
-            } else {
-                timeline.stop();
-                if (onFinished != null) onFinished.run();
-            }
-        });
-
-        timeline.getKeyFrames().add(keyFrame);
-        timeline.setCycleCount(text.length());
-        timeline.play();
-    }
-
-
     private void showDialogue(String message, int duration) {
         dialogueText.setText(message);
         dialogueBar.setVisible(true);
@@ -501,24 +479,24 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-            int choice =  random.nextInt(3);
-            int sd = switch (choice) {
-                case 0 -> {
-                    alastor.throwSpearAll();
-                    yield 10;
-                }
-                case 1 -> {
-                    alastor.Laser(r, p, P);
-                    yield 19;
-                }
-                case 2 -> {
-                    alastor.JumpyHeart(battleBox,heart);
-                    yield 15;
-                }
-                default -> 1;
-            };
-
-            PauseTransition resume = new PauseTransition(Duration.seconds(sd + 1));
+//            int choice =  random.nextInt(3);
+//            int sd = switch (choice) {
+//                case 0 -> {
+//                    alastor.throwSpearAll();
+//                    yield 10;
+//                }
+//                case 1 -> {
+//                    alastor.Laser(r, p, P);
+//                    yield 19;
+//                }
+//                case 2 -> {
+//                    alastor.JumpyHeart(battleBox,heart);
+//                    yield 15;
+//                }
+//                default -> 1;
+//            };
+            alastor.JumpyHeart(battleBox,heart);
+            PauseTransition resume = new PauseTransition(Duration.seconds(15 + 1));
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
