@@ -53,7 +53,6 @@ public class BattleManager extends Application {
     Label atkLabel = new Label("");
 
 
-
     // AudioClips
     AudioClip btnClicked = new AudioClip(getClass().getResource("/sounds/select-sound.mp3").toExternalForm());
     AudioClip ItemClicked = new AudioClip(getClass().getResource("/sounds/item.mp3").toExternalForm());
@@ -74,9 +73,6 @@ public class BattleManager extends Application {
         Text playerHp = new Text();
         playerHp.textProperty().bind(Bindings.concat(
                 " HP:", player.getHp().asString()));
-        Text playerAtk = new Text("Atk Boosted");
-        playerAtk.setFill(Color.BLUE);
-        playerAtk.getStyleClass().add("game-label");
 
         playerHp.setFill(Color.WHITE);
         playerHp.getStyleClass().add("game-label");
@@ -131,11 +127,11 @@ public class BattleManager extends Application {
         playerNameText.xProperty().bind(playerHPFrame.xProperty().subtract(120));
         playerHp.yProperty().bind(playerHPFrame.yProperty().add(10));
         playerHp.xProperty().bind(playerHPFrame.xProperty().subtract(70));
+
         playerLevelText.yProperty().bind(playerHPFrame.yProperty().add(10));
         playerLevelText.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(20));
-        playerAtk.yProperty().bind(playerHPFrame.yProperty().add(10));
-        playerAtk.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(70));
-        playerAtk.setVisible(false);
+
+
         villainImg = new Image(getClass().getResource("/villain.png").toExternalForm());
         villainImage = new ImageView(villainImg);
         villainImage.setFitWidth(300);
@@ -185,7 +181,6 @@ public class BattleManager extends Application {
             if (atkUp.getAtkInUse() == 1) {
                 damages = player.getDamages();
                 atkUp.setAtkInUse(0);
-                playerAtk.setVisible(false);
             } else {
                 player.setDamage(5, 10);
                 damages = player.getDamages();
@@ -261,8 +256,7 @@ public class BattleManager extends Application {
         BoostATK = createTalkOption(" BoostATK", scene, 2);
         atkLabel = createLable(atkUp.getAtkCount().get() + "", scene, 2, atkLabel);
         BoostATK.setOnAction(e -> {
-            if (atkUp.getAtkCount().get() > 0) {
-                playerAtk.setVisible(true);
+            if (atkUp.getHealCount().get() > 0) {
                 ItemClicked.play();
                 atkUp.setAtkInUse(1);
                 atkUp.atkuse();
@@ -337,7 +331,7 @@ public class BattleManager extends Application {
 
         root.getChildren().addAll(
                 villainImage, villainImage_hurt,
-                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,playerAtk,
+                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
@@ -382,7 +376,7 @@ public class BattleManager extends Application {
         stage.show();
         player.getHp().addListener((observable, oldValue, newValue) -> {
             if (newValue.intValue() <= 0) {
-                // gameOver(stage);
+                 gameOver(stage);
             }
         });
 
