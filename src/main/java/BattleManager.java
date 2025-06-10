@@ -349,7 +349,7 @@ public class BattleManager extends Application {
         stage.show();
         player.getHp().addListener((observable, oldValue, newValue) -> {
             if (newValue.intValue() <= 0) {
-                 gameOver(stage);
+                gameOver(stage);
             }
         });
 
@@ -479,23 +479,23 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-//            int choice =  random.nextInt(3);
-//            int sd = switch (choice) {
-//                case 0 -> {
-//                    alastor.throwSpearAll();
-//                    yield 10;
-//                }
-//                case 1 -> {
-//                    alastor.Laser(r, p, P);
-//                    yield 19;
-//                }
-//                case 2 -> {
-//                    alastor.JumpyHeart(battleBox,heart);
-//                    yield 15;
-//                }
-//                default -> 1;
-//            };
-            alastor.JumpyHeart(battleBox,heart);
+            int choice =  random.nextInt(3);
+            int sd = switch (choice) {
+                case 0 -> {
+                    alastor.throwSpearAll();
+                    yield 10;
+                }
+                case 1 -> {
+                    alastor.Laser(r, p, P);
+                    yield 19;
+                }
+                case 2 -> {
+                    alastor.JumpyHeart(battleBox,heart);
+                    yield 15;
+                }
+                default -> 1;
+            };
+//            alastor.JumpyHeart(battleBox,heart);
             PauseTransition resume = new PauseTransition(Duration.seconds(15 + 1));
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;

@@ -439,13 +439,8 @@ public class Alastor extends Villain {
 //
 
     public void JumpyHeart(Rectangle battleBox, Path heart) {
-        Pane root = getRoot(); // فرض می‌کنیم getRoot قبلاً تعریف شده است
+        Pane root = getRoot();
         Scene scene = root.getScene();
-        double GRAVITY = 0.3, JUMP_STRENGTH = -10, MOVE_SPEED = 2;
-        Set<KeyCode> keysPressed = new HashSet<>();
-
-        scene.setOnKeyPressed(e -> keysPressed.add(e.getCode()));
-        scene.setOnKeyReleased(e -> keysPressed.remove(e.getCode()));
 
         List<Group> spears = new ArrayList<>();
         List<Double> baseYs = new ArrayList<>();
@@ -454,12 +449,10 @@ public class Alastor extends Villain {
         List<Double> phases = new ArrayList<>();
         List<Double> times = new ArrayList<>();
 
-        double[] velocityY = {0};
-        boolean[] canJump = {true};
         Random rand = new Random();
         int[] spawnTimer = {0}, patternCounter = {0}, difficultyTimer = {0};
-        double[] spearSpeed = {2.5}; // کاهش سرعت اولیه از 3 به 2.5
-        boolean[] isInvincible = {false}; // متغیر برای دوره مصونیت
+        double[] spearSpeed = {2.5}; // Speed of spears
+        boolean[] isInvincible = {false};
 
         AnimationTimer timer = new AnimationTimer() {
             long last = 0;
@@ -481,55 +474,24 @@ public class Alastor extends Villain {
                 if (totalTime >= 15) {
                     System.out.println("Game over: Time's up!");
                     for (Group spear : spears) root.getChildren().remove(spear);
-                    spears.clear();
-                    baseYs.clear();
-                    amplitudes.clear();
-                    speeds.clear();
-                    phases.clear();
-                    times.clear();
+                    spears.clear(); baseYs.clear(); amplitudes.clear();
+                    speeds.clear(); phases.clear(); times.clear();
                     this.stop();
                     return;
                 }
 
-                if (keysPressed.contains(KeyCode.A)) heart.setLayoutX(heart.getLayoutX() - MOVE_SPEED);
-                if (keysPressed.contains(KeyCode.D)) heart.setLayoutX(heart.getLayoutX() + MOVE_SPEED);
-                if (keysPressed.contains(KeyCode.SPACE) && canJump[0]) {
-                    velocityY[0] = JUMP_STRENGTH;
-                    canJump[0] = false;
-                }
-
-                velocityY[0] += GRAVITY;
-                heart.setLayoutY(heart.getLayoutY() + velocityY[0]);
-
-                Bounds hb = heart.getBoundsInParent();
-
-                if (hb.getMinX() < minX) heart.setLayoutX(minX - hb.getMinX() + heart.getLayoutX());
-                else if (hb.getMaxX() > maxX) heart.setLayoutX(maxX - hb.getMaxX() + heart.getLayoutX());
-
-                if (hb.getMinY() < minY) {
-                    heart.setLayoutY(minY - hb.getMinY() + heart.getLayoutY());
-                    velocityY[0] = 0;
-                    canJump[0] = true;
-                } else if (hb.getMaxY() > maxY) {
-                    heart.setLayoutY(maxY - hb.getMaxY() + heart.getLayoutY());
-                    velocityY[0] = 0;
-                    canJump[0] = true;
-                }
-
                 spawnTimer[0]++;
                 difficultyTimer[0]++;
-                if (spawnTimer[0] % 90 == 0) { // افزایش از 60 به 90 برای کاهش فرکانس
+                if (spawnTimer[0] % 90 == 0) {
                     double startX = minX - 40;
                     patternCounter[0]++;
-
                     if (patternCounter[0] % 5 == 0) {
                         for (int i = 0; i < 5; i++) {
-                            double offset = i * 60; // افزایش از 50 به 60
+                            double offset = i * 60;
                             for (boolean top : new boolean[]{true, false}) {
                                 Polygon tip = new Polygon();
                                 Rectangle shaft = new Rectangle(8, 60);
-                                shaft.setFill(Color.WHITE);
-                                shaft.setLayoutX(4);
+                                shaft.setFill(Color.WHITE); shaft.setLayoutX(4);
                                 if (top) {
                                     tip.getPoints().addAll(0.0, 0.0, 16.0, 0.0, 8.0, -24.0);
                                     tip.setLayoutY(60);
@@ -537,8 +499,7 @@ public class Alastor extends Villain {
                                     tip.getPoints().addAll(0.0, 24.0, 16.0, 24.0, 8.0, 0.0);
                                     tip.setLayoutY(-24);
                                 }
-                                tip.setLayoutX(0);
-                                tip.setFill(Color.WHITE);
+                                tip.setLayoutX(0); tip.setFill(Color.WHITE);
                                 Group spear = new Group(shaft, tip);
                                 spear.setLayoutX(startX - offset);
                                 double y = top ? minY + 10 : maxY;
@@ -557,25 +518,21 @@ public class Alastor extends Villain {
                         boolean allowTop = true;
                         boolean top = allowTop && rand.nextBoolean();
                         boolean bottom = allowBottom && rand.nextBoolean();
-
                         if (!top && !bottom) {
                             top = patternCounter[0] <= 8 || rand.nextBoolean();
                             if (!top && allowBottom) bottom = true;
                         }
-
                         if (top) {
-                            int count = 1; // تعداد ثابت 1 برای کاهش شلوغی
+                            int count = 1;
                             for (int i = 0; i < count; i++) {
-                                double x = startX - i * 80; // افزایش از 60 به 80
+                                double x = startX - i * 80;
                                 double y = minY + 10;
                                 boolean falling = rand.nextDouble() < 0.3;
                                 Rectangle shaft = new Rectangle(8, 60);
-                                shaft.setFill(Color.WHITE);
-                                shaft.setLayoutX(4);
+                                shaft.setFill(Color.WHITE); shaft.setLayoutX(4);
                                 Polygon tip = new Polygon();
                                 tip.getPoints().addAll(0.0, 0.0, 16.0, 0.0, 8.0, -24.0);
-                                tip.setLayoutY(60);
-                                tip.setLayoutX(0);
+                                tip.setLayoutY(60); tip.setLayoutX(0);
                                 tip.setFill(Color.WHITE);
                                 Group spear = new Group(shaft, tip);
                                 spear.setLayoutX(x);
@@ -585,27 +542,22 @@ public class Alastor extends Villain {
                                 baseYs.add(falling ? spear.getLayoutY() : y);
                                 amplitudes.add(falling ? 0.0 : 10 + rand.nextDouble() * 20 + spearSpeed[0] * 2);
                                 speeds.add(falling ? 0.0 : 1 + rand.nextDouble() * 3 + spearSpeed[0] * 0.5);
-                                phases.add(0.0);
-                                times.add(1.0);
+                                phases.add(0.0); times.add(1.0);
                             }
                         }
-
                         if (bottom) {
-                            int count = 1; // تعداد ثابت 1 برای کاهش شلوغی
+                            int count = 1;
                             for (int i = 0; i < count; i++) {
-                                double x = startX - i * 80; // افزایش از 60 به 80
+                                double x = startX - i * 80;
                                 double y = maxY;
                                 Rectangle shaft = new Rectangle(8, 60);
-                                shaft.setFill(Color.WHITE);
-                                shaft.setLayoutX(4);
+                                shaft.setFill(Color.WHITE); shaft.setLayoutX(4);
                                 Polygon tip = new Polygon();
                                 tip.getPoints().addAll(0.0, 24.0, 16.0, 24.0, 8.0, 0.0);
-                                tip.setLayoutY(-24);
-                                tip.setLayoutX(0);
+                                tip.setLayoutY(-24); tip.setLayoutX(0);
                                 tip.setFill(Color.WHITE);
                                 Group spear = new Group(shaft, tip);
-                                spear.setLayoutX(x);
-                                spear.setLayoutY(y);
+                                spear.setLayoutX(x); spear.setLayoutY(y);
                                 root.getChildren().add(spear);
                                 spears.add(spear);
                                 baseYs.add(y);
@@ -619,7 +571,7 @@ public class Alastor extends Villain {
                 }
 
                 if (difficultyTimer[0] % 600 == 0) {
-                    spearSpeed[0] += 0.2; // کاهش افزایش سرعت از 0.3 به 0.2
+                    spearSpeed[0] += 0.2;
                     System.out.println("Increased spear speed to " + spearSpeed[0]);
                 }
 
@@ -629,8 +581,8 @@ public class Alastor extends Villain {
                     times.set(i, times.get(i) + dt);
 
                     Bounds spearBounds = spear.getBoundsInParent();
-
                     double proposedX = spear.getLayoutX() + spearSpeed[0];
+
                     if (proposedX + (spearBounds.getMinX() - spear.getLayoutX()) < minX) {
                         proposedX = minX - (spearBounds.getMinX() - spear.getLayoutX());
                     } else if (proposedX + (spearBounds.getMaxX() - spear.getLayoutX()) > maxX) {
@@ -640,10 +592,11 @@ public class Alastor extends Villain {
 
                     double proposedY;
                     if (amplitudes.get(i) == 0.0 && speeds.get(i) == 0.0) {
-                        proposedY = spear.getLayoutY() + spearSpeed[0] * 0.8; // کاهش ضریب از 1.0 به 0.8
+                        proposedY = spear.getLayoutY() + spearSpeed[0] * 0.8;
                     } else {
                         proposedY = baseYs.get(i) + Math.sin(times.get(i) * speeds.get(i) + phases.get(i)) * amplitudes.get(i);
                     }
+
                     if (proposedY + (spearBounds.getMinY() - spear.getLayoutY()) < minY) {
                         proposedY = minY - (spearBounds.getMinY() - spear.getLayoutY());
                     } else if (proposedY + (spearBounds.getMaxY() - spear.getLayoutY()) > maxY) {
@@ -660,28 +613,21 @@ public class Alastor extends Villain {
                         p.getdmg(10);
                         isInvincible[0] = true;
                         DropShadow flash = new DropShadow();
-                        flash.setColor(Color.RED);
-                        flash.setRadius(8);
+                        flash.setColor(Color.RED); flash.setRadius(8);
                         heart.setEffect(flash);
                         PauseTransition removeFlash = new PauseTransition(Duration.millis(200));
                         removeFlash.setOnFinished(e -> heart.setEffect(null));
-                        PauseTransition invincibilityTimer = new PauseTransition(Duration.millis(1000)); // افزایش به 1.2 ثانیه
+                        PauseTransition invincibilityTimer = new PauseTransition(Duration.millis(1000));
                         invincibilityTimer.setOnFinished(e -> isInvincible[0] = false);
-                        removeFlash.play();
-                        invincibilityTimer.play();
+                        removeFlash.play(); invincibilityTimer.play();
                     }
                 }
 
                 Collections.reverse(toRemove);
                 for (int idx : toRemove) {
                     root.getChildren().remove(spears.get(idx));
-                    spears.remove(idx);
-                    baseYs.remove(idx);
-                    amplitudes.remove(idx);
-                    speeds.remove(idx);
-                    phases.remove(idx);
-                    times.remove(idx);
-                    heart.setVisible(false);
+                    spears.remove(idx); baseYs.remove(idx); amplitudes.remove(idx);
+                    speeds.remove(idx); phases.remove(idx); times.remove(idx);
                 }
             }
         };
