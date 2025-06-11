@@ -14,21 +14,28 @@ import javafx.util.Duration;
 import javafx.animation.Timeline;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
 import java.util.Objects;
 import java.util.Random;
 import java.util.ArrayList;
+
 import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
+
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
+
 import javafx.scene.shape.Polygon;
+
 import java.util.Collections;
+
 import javafx.scene.Group;
 import javafx.scene.Scene;
 
 public class Alastor extends Villain {
     private Player p;
+    AudioClip dmgtaken = new AudioClip(getClass().getResource("/sounds/damage-taken.mp3").toExternalForm());
 
     public Alastor(int hp) {
         super(hp);
@@ -37,15 +44,15 @@ public class Alastor extends Villain {
     public void setPlayer(Player p) {
         this.p = p;
     }
+
     AudioClip dmg_taken = new AudioClip(getClass().getResource("/sounds/damage-taken.mp3").toExternalForm());
-    AudioClip hitSound = new AudioClip(getClass().getResource("/sounds/hit.wav").toExternalForm());
+    AudioClip hitSound = new AudioClip(getClass().getResource("/sounds/laser.wav").toExternalForm());
 
     public void throwSpearAll() {
         Image spearImg = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/spear.png")));
         int numberOfSpears = 12;
         double delayBetweenSpears = 0.7;
         Timeline timeline = new Timeline();
-
         for (int i = 0; i < numberOfSpears; i++) {
             KeyFrame kf = new KeyFrame(Duration.seconds(i * delayBetweenSpears), event -> {
                 ImageView spear = new ImageView(spearImg);
@@ -88,6 +95,7 @@ public class Alastor extends Villain {
                         System.out.println("Spear hit the heart!");
                         dmg_taken.play();
                         p.getdmg(15);
+                        dmgtaken.play();
                         spearMove.stop();
                         hitboxMove.stop();
                         getRoot().getChildren().remove(spear);
@@ -174,6 +182,7 @@ public class Alastor extends Villain {
                         if (intersection.getBoundsInLocal().getWidth() != -1) {
                             System.out.println("Laser hit the heart!");
                             p.getdmg(5);
+                            dmgtaken.play();
                             dmg_taken.play();
                         }
                     }
@@ -194,11 +203,6 @@ public class Alastor extends Villain {
     public void JumpyHeart(Rectangle battleBox, Path heart) {
         Pane root = getRoot();
         Scene scene = root.getScene();
-        double GRAVITY = 0.3, JUMP_STRENGTH = -10, MOVE_SPEED = 2,MAX_FALL_SPEED = 8;
-        Set<KeyCode> keysPressed = new HashSet<>();
-
-        scene.setOnKeyPressed(e -> keysPressed.add(e.getCode()));
-        scene.setOnKeyReleased(e -> keysPressed.remove(e.getCode()));
 
         List<Group> spears = new ArrayList<>();
         List<Double> baseYs = new ArrayList<>();
@@ -207,11 +211,9 @@ public class Alastor extends Villain {
         List<Double> phases = new ArrayList<>();
         List<Double> times = new ArrayList<>();
 
-        double[] velocityY = {0};
-        boolean[] canJump = {true};
         Random rand = new Random();
         int[] spawnTimer = {0}, patternCounter = {0}, difficultyTimer = {0};
-        double[] spearSpeed = {1.5};
+        double[] spearSpeed = {3};
         boolean[] isInvincible = {false};
 
         AnimationTimer timer = new AnimationTimer() {
@@ -244,40 +246,11 @@ public class Alastor extends Villain {
                     return;
                 }
 
-                if (keysPressed.contains(KeyCode.A)) heart.setLayoutX(heart.getLayoutX() - MOVE_SPEED);
-                if (keysPressed.contains(KeyCode.D)) heart.setLayoutX(heart.getLayoutX() + MOVE_SPEED);
-                if (keysPressed.contains(KeyCode.SPACE) && canJump[0]) {
-                    velocityY[0] = JUMP_STRENGTH;
-                    canJump[0] = false;
-                }
-
-
-                velocityY[0] += GRAVITY;
-                if (velocityY[0] > MAX_FALL_SPEED) velocityY[0] = MAX_FALL_SPEED; // اضافه کردن این خط
-                heart.setLayoutY(heart.getLayoutY() + velocityY[0]);
-
-
-                Bounds hb = heart.getBoundsInParent();
-
-                if (hb.getMinX() < minX) heart.setLayoutX(minX - hb.getMinX() + heart.getLayoutX());
-                else if (hb.getMaxX() > maxX) heart.setLayoutX(maxX - hb.getMaxX() + heart.getLayoutX());
-
-                if (hb.getMinY() < minY) {
-                    heart.setLayoutY(minY - hb.getMinY() + heart.getLayoutY());
-                    velocityY[0] = 0;
-                    canJump[0] = true;
-                } else if (hb.getMaxY() > maxY) {
-                    heart.setLayoutY(maxY - hb.getMaxY() + heart.getLayoutY());
-                    velocityY[0] = 0;
-                    canJump[0] = true;
-                }
-
                 spawnTimer[0]++;
                 difficultyTimer[0]++;
-                if (spawnTimer[0] % 150 == 0) {
-                    double startX = minX - 50;
+                if (spawnTimer[0] % 90 == 0) {
+                    double startX = minX - 40;
                     patternCounter[0]++;
-
                     if (patternCounter[0] % 5 == 0) {
                         for (int i = 0; i < 5; i++) {
                             double offset = i * 60;
@@ -313,19 +286,17 @@ public class Alastor extends Villain {
                         boolean allowTop = true;
                         boolean top = allowTop && rand.nextBoolean();
                         boolean bottom = allowBottom && rand.nextBoolean();
-
                         if (!top && !bottom) {
                             top = patternCounter[0] <= 8 || rand.nextBoolean();
                             if (!top && allowBottom) bottom = true;
                         }
-
                         if (top) {
                             int count = 1;
                             for (int i = 0; i < count; i++) {
-                                double x = startX - i * 150;
+                                double x = startX - i * 30;
                                 double y = minY + 10;
-                                boolean falling = rand.nextDouble() < 0.3;
-                                Rectangle shaft = new Rectangle(8, 60);
+                                boolean falling = rand.nextDouble() < 0.8;
+                                Rectangle shaft = new Rectangle(8, 100);
                                 shaft.setFill(Color.WHITE);
                                 shaft.setLayoutX(4);
                                 Polygon tip = new Polygon();
@@ -345,13 +316,12 @@ public class Alastor extends Villain {
                                 times.add(1.0);
                             }
                         }
-
                         if (bottom) {
                             int count = 1;
                             for (int i = 0; i < count; i++) {
-                                double x = startX - i * 150;
+                                double x = startX - i * 60;
                                 double y = maxY;
-                                Rectangle shaft = new Rectangle(8, 60);
+                                Rectangle shaft = new Rectangle(8, 120);
                                 shaft.setFill(Color.WHITE);
                                 shaft.setLayoutX(4);
                                 Polygon tip = new Polygon();
@@ -385,8 +355,8 @@ public class Alastor extends Villain {
                     times.set(i, times.get(i) + dt);
 
                     Bounds spearBounds = spear.getBoundsInParent();
-
                     double proposedX = spear.getLayoutX() + spearSpeed[0];
+
                     if (proposedX + (spearBounds.getMinX() - spear.getLayoutX()) < minX) {
                         proposedX = minX - (spearBounds.getMinX() - spear.getLayoutX());
                     } else if (proposedX + (spearBounds.getMaxX() - spear.getLayoutX()) > maxX) {
@@ -400,6 +370,7 @@ public class Alastor extends Villain {
                     } else {
                         proposedY = baseYs.get(i) + Math.sin(times.get(i) * speeds.get(i) + phases.get(i)) * amplitudes.get(i);
                     }
+
                     if (proposedY + (spearBounds.getMinY() - spear.getLayoutY()) < minY) {
                         proposedY = minY - (spearBounds.getMinY() - spear.getLayoutY());
                     } else if (proposedY + (spearBounds.getMaxY() - spear.getLayoutY()) > maxY) {
@@ -414,16 +385,21 @@ public class Alastor extends Villain {
                     if (!isInvincible[0] && spear.getBoundsInParent().intersects(heart.getBoundsInParent())) {
                         System.out.println("Hit by spear!");
                         p.getdmg(10);
-                        dmg_taken.play();
+                        dmgtaken.play();
                         isInvincible[0] = true;
+                        heart.setOpacity(0.5);
                         DropShadow flash = new DropShadow();
                         flash.setColor(Color.RED);
                         flash.setRadius(8);
                         heart.setEffect(flash);
+
                         PauseTransition removeFlash = new PauseTransition(Duration.millis(200));
                         removeFlash.setOnFinished(e -> heart.setEffect(null));
-                        PauseTransition invincibilityTimer = new PauseTransition(Duration.millis(1500));
-                        invincibilityTimer.setOnFinished(e -> isInvincible[0] = false);
+                        PauseTransition invincibilityTimer = new PauseTransition(Duration.millis(1000));
+                        invincibilityTimer.setOnFinished(e -> {
+                            isInvincible[0] = false;
+                            heart.setOpacity(1);
+                        });
                         removeFlash.play();
                         invincibilityTimer.play();
                     }
@@ -438,7 +414,6 @@ public class Alastor extends Villain {
                     speeds.remove(idx);
                     phases.remove(idx);
                     times.remove(idx);
-                    heart.setVisible(false);
                 }
             }
         };
