@@ -54,6 +54,7 @@ public class BattleManager extends Application {
 
 
     // AudioClips
+
     AudioClip btnClicked = new AudioClip(getClass().getResource("/sounds/select-sound.mp3").toExternalForm());
     AudioClip ItemClicked = new AudioClip(getClass().getResource("/sounds/item.mp3").toExternalForm());
     AudioClip slashEnemy = new AudioClip(getClass().getResource("/sounds/slash.mp3").toExternalForm());
