@@ -21,6 +21,9 @@
 		I. enemy
 		II. enemy attacks 
 		
-		
+- Features
+	1. Beginning game 
+	2. Victory effects
+	3. other GUI things
 	
 	
