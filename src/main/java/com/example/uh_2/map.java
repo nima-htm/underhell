@@ -18,44 +18,45 @@ import java.util.Set;
 public class map extends Application {
     ImageView player;
     final int TILE_SIZE = 40;
-    final int MAP_WIDTH = 10;
-    final int MAP_HEIGHT = 8;
+    final int MAP_WIDTH = 20;
+    final int MAP_HEIGHT = 15;
 
     String[] mapData = {
-            "##########",  // must be length 10
-            "#........#",
-            "#.######.#",
-            "#.#....#.#",
-            "#.#.##.#.#",
-            "#.#....#.#",
-            "#........#",
-            "##########"
+            "####################",
+            "#........#.........#",
+            "#.######.#.#####...#",
+            "#.#....#.#.....#...#",
+            "#.#.##.#.###.#.###.#",
+            "#.#....#.....#.....#",
+            "#.~~~~~~.###########",
+            "#.~~~~~~...........#",
+            "#.======...........#",
+            "#.~~~~~~...........#",
+            "#.~~~~~~..###......#",
+            "#.............######",
+            "######........~~~~~#",
+            "#....#........~~~~~#",
+            "####################"
     };
 
-    private Set<Point2D> puzzleLocations = Set.of(new Point2D(3, 4), new Point2D(7, 2));
-
-
+    private Set<Point2D> puzzleLocations = Set.of(new Point2D(4, 4), new Point2D(8, 2));
     Image playerWalkGif = new Image(getClass().getResourceAsStream("/R.gif")); // Ensure the file is in `resources`
     Image playerIdleImage = new Image(getClass().getResourceAsStream("/download.png"));
-
-
+    Image water = new Image(getClass().getResourceAsStream("/w.gif"));
+    Image wood = new Image(getClass().getResourceAsStream("/wood.jpg"));
     @Override
     public void start(Stage stage) {
 
         Pane root = new Pane();
         root.setPrefSize(MAP_WIDTH * TILE_SIZE, MAP_HEIGHT * TILE_SIZE);
-
         player = new ImageView(playerIdleImage);
-
         player.setFitWidth(TILE_SIZE - 10);
         player.setFitHeight(TILE_SIZE - 10);
         player.setTranslateX(1 * TILE_SIZE + 5);
         player.setTranslateY(1 * TILE_SIZE + 5);
 
-        // Load tile images
         Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
         Image floorImage = new Image(getClass().getResourceAsStream("/OIP.jfif"));
-        // Build the map with images
 
         for (int y = 0; y < MAP_HEIGHT; y++) {
             for (int x = 0; x < MAP_WIDTH; x++) {
@@ -69,8 +70,13 @@ public class map extends Application {
 
                 if (tile == '#') {
                     tileView.setImage(wallImage);
-                } else {
+                } else if (tile == '.') {
                     tileView.setImage(floorImage);
+                } else if (tile == '=') {
+                    tileView.setImage(wood);
+                }
+                else {
+                    tileView.setImage(water);
                 }
 
                 root.getChildren().add(tileView);
@@ -89,7 +95,8 @@ public class map extends Application {
             if (event.getCode() == KeyCode.D) dx = 1;
             movePlayer(dx, dy, stage);
         });
-        stage.setTitle("Map with Tile Images");
+        root.setStyle("-fx-background-color: black;");
+        stage.setTitle("UnderHell");
         stage.setScene(scene);
         stage.show();
     }
@@ -108,6 +115,7 @@ public class map extends Application {
 
         if (newX < 0 || newY < 0 || newX >= MAP_WIDTH || newY >= MAP_HEIGHT) return;
         if (mapData[newY].charAt(newX) == '#') return;
+        if (mapData[newY].charAt(newX) == '~') return;
 
         // Switch to animated walk gif when moving
         player.setImage(playerWalkGif);
