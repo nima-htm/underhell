@@ -1,17 +1,24 @@
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.media.AudioClip;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
 import java.util.Random;
 
 import java.util.Optional;
@@ -44,11 +51,12 @@ public class map extends Application {
     private Set<Point2D> puzzleLocations = Set.of(new Point2D(4, 4), new Point2D(8, 2));
     private Set<Point2D> doorLocation = Set.of(new Point2D(18, 8)); // Change coordinates as needed
     private Set<Point2D> keyLocation = Set.of(new Point2D(6, 13));
-
+    private Set<Point2D> hiddenkey = Set.of(new Point2D(14, 13));
     Image playerWalkGif = new Image(getClass().getResourceAsStream("/R.gif")); // Ensure the file is in `resources`
     Image playerIdleImage = new Image(getClass().getResourceAsStream("/download.png"));
     Image water = new Image(getClass().getResourceAsStream("/w.gif"));
     Image wood = new Image(getClass().getResourceAsStream("/wood.jpg"));
+
     @Override
     public void start(Stage stage) {
 
@@ -62,7 +70,7 @@ public class map extends Application {
 
         Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
         Image floorImage = new Image(getClass().getResourceAsStream("/OIP.jfif"));
-        Image doorImage= new Image(getClass().getResourceAsStream("/dd.png"));
+        Image doorImage = new Image(getClass().getResourceAsStream("/dd.png"));
 
         for (int y = 0; y < MAP_HEIGHT; y++) {
             for (int x = 0; x < MAP_WIDTH; x++) {
@@ -80,10 +88,9 @@ public class map extends Application {
                     tileView.setImage(floorImage);
                 } else if (tile == '=') {
                     tileView.setImage(wood);
-                }else if (tile == '@') {
+                } else if (tile == '@') {
                     tileView.setImage(doorImage); // Define doorImage like other terrain images
-                }
-                else {
+                } else {
                     tileView.setImage(water);
                 }
 
@@ -101,7 +108,7 @@ public class map extends Application {
             if (event.getCode() == KeyCode.S) dy = 1;
             if (event.getCode() == KeyCode.A) dx = -1;
             if (event.getCode() == KeyCode.D) dx = 1;
-            movePlayer(dx, dy, stage,root);
+            movePlayer(dx, dy, stage, root);
         });
         root.setStyle("-fx-background-color: black;");
         stage.setTitle("UnderHell");
@@ -109,7 +116,7 @@ public class map extends Application {
         stage.show();
     }
 
-    private void movePlayer(int dx, int dy, Stage stage,Pane root) {
+    private void movePlayer(int dx, int dy, Stage stage, Pane root) {
         if (dx == 0 && dy == 0) {
             player.setImage(playerIdleImage); // No movement → idle image
             return;
@@ -137,7 +144,12 @@ public class map extends Application {
 
         if (newX < 0 || newY < 0 || newX >= MAP_WIDTH || newY >= MAP_HEIGHT) return;
         if (mapData[newY].charAt(newX) == '#') return;
-        if (mapData[newY].charAt(newX) == '~') return;
+        if (mapData[newY].charAt(newX) == '~' && !hiddenkey.contains(new Point2D(newX, newY))) {
+            gameOver(stage);
+        }
+        if (hiddenkey.contains(new Point2D(newX, newY))) {
+            hiddenKey(stage);
+        }
 
         // Switch to animated walk gif when moving
         player.setImage(playerWalkGif);
@@ -175,6 +187,7 @@ public class map extends Application {
             }
         }
     }
+
     private void showKey(Stage stage) {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("A Mysterious Door!");
@@ -201,6 +214,47 @@ public class map extends Application {
                 System.out.println("Wrong key.");
             }
         });
+    }
+    private void hiddenKey(Stage stage) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("BRILLIANT!~");
+        dialog.setHeaderText("YOU FOUND A  SPECIAL KEY!");
+
+        Image doorImage = new Image(getClass().getResource("/key.png").toExternalForm()); // Your door image
+        ImageView imageView = new ImageView(doorImage);
+        imageView.setFitWidth(100);
+        imageView.setFitHeight(100);
+        dialog.setGraphic(imageView);
+
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(answer -> {
+
+        });
+    }
+    private void gameOver(Stage stage) {
+
+        Label gameOverLabel = new Label("YOU DIED...");
+        gameOverLabel.setTextFill(Color.RED);
+        gameOverLabel.setStyle("-fx-font-size: 64px; -fx-font-weight: bold;");
+        StackPane gameOverRoot = new StackPane(gameOverLabel);
+        gameOverRoot.setStyle("-fx-background-color: black;");
+
+        Scene gameOverScene = new Scene(gameOverRoot, 800, 600);
+        stage.setScene(gameOverScene);
+        stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+        stage.setFullScreenExitHint(" ");
+        stage.setFullScreen(true);
+        stage.setResizable(false);
+        stage.centerOnScreen();
+
+
+        PauseTransition delay = new PauseTransition(Duration.seconds(2));
+        delay.setOnFinished(e -> Platform.exit());
+        delay.play();
     }
 
     public static void main(String[] args) {
