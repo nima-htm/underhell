@@ -1,5 +1,3 @@
-package com.example.uh_2;
-
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.geometry.Point2D;
@@ -11,6 +9,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import java.util.Random;
 
 import java.util.Optional;
 import java.util.Set;
@@ -30,7 +29,7 @@ public class map extends Application {
             "#.#....#.....#.....#",
             "#.~~~~~~.###########",
             "#.~~~~~~...........#",
-            "#.======...........#",
+            "#.======..........@#",
             "#.~~~~~~...........#",
             "#.~~~~~~..###......#",
             "#.............######",
@@ -40,6 +39,8 @@ public class map extends Application {
     };
 
     private Set<Point2D> puzzleLocations = Set.of(new Point2D(4, 4), new Point2D(8, 2));
+    private Set<Point2D> doorLocation = Set.of(new Point2D(18, 8)); // Change coordinates as needed
+
     Image playerWalkGif = new Image(getClass().getResourceAsStream("/R.gif")); // Ensure the file is in `resources`
     Image playerIdleImage = new Image(getClass().getResourceAsStream("/download.png"));
     Image water = new Image(getClass().getResourceAsStream("/w.gif"));
@@ -57,6 +58,7 @@ public class map extends Application {
 
         Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
         Image floorImage = new Image(getClass().getResourceAsStream("/OIP.jfif"));
+        Image doorImage= new Image(getClass().getResourceAsStream("/dd.png"));
 
         for (int y = 0; y < MAP_HEIGHT; y++) {
             for (int x = 0; x < MAP_WIDTH; x++) {
@@ -74,6 +76,8 @@ public class map extends Application {
                     tileView.setImage(floorImage);
                 } else if (tile == '=') {
                     tileView.setImage(wood);
+                }else if (tile == '@') {
+                    tileView.setImage(doorImage); // Define doorImage like other terrain images
                 }
                 else {
                     tileView.setImage(water);
@@ -93,7 +97,7 @@ public class map extends Application {
             if (event.getCode() == KeyCode.S) dy = 1;
             if (event.getCode() == KeyCode.A) dx = -1;
             if (event.getCode() == KeyCode.D) dx = 1;
-            movePlayer(dx, dy, stage);
+            movePlayer(dx, dy, stage,root);
         });
         root.setStyle("-fx-background-color: black;");
         stage.setTitle("UnderHell");
@@ -101,7 +105,7 @@ public class map extends Application {
         stage.show();
     }
 
-    private void movePlayer(int dx, int dy, Stage stage) {
+    private void movePlayer(int dx, int dy, Stage stage,Pane root) {
         if (dx == 0 && dy == 0) {
             player.setImage(playerIdleImage); // No movement → idle image
             return;
@@ -113,6 +117,20 @@ public class map extends Application {
         int newX = x + dx;
         int newY = y + dy;
 
+        Point2D newPos = new Point2D(newX, newY);
+
+        if (doorLocation.contains(newPos)) {
+            try {
+                BattleManager battleManager = new BattleManager();
+                Stage currentStage = new Stage();
+
+
+                battleManager.start(currentStage);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
         if (newX < 0 || newY < 0 || newX >= MAP_WIDTH || newY >= MAP_HEIGHT) return;
         if (mapData[newY].charAt(newX) == '#') return;
         if (mapData[newY].charAt(newX) == '~') return;
@@ -122,26 +140,30 @@ public class map extends Application {
         player.setTranslateX(newX * TILE_SIZE + 5);
         player.setTranslateY(newY * TILE_SIZE + 5);
 
-        // Optional: switch back to idle after short delay
+
         PauseTransition delay = new PauseTransition(Duration.millis(200));
         delay.setOnFinished(e -> player.setImage(playerIdleImage));
         delay.play();
-        Point2D newPos = new Point2D(newX, newY);
+
         if (puzzleLocations.contains(newPos)) {
             showPuzzleDialog(stage);
         }
     }
 
     private void showPuzzleDialog(Stage stage) {
+        Random random = new Random();
+        int num1 = random.nextInt(100);
+        int num2 = random.nextInt(100);
+
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Puzzle Time!");
         dialog.setHeaderText("Solve the puzzle to proceed");
-        dialog.setContentText("What is 2 + 2?");
+        dialog.setContentText("What is " + num1 + " + " + num2 + " ?");
 
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             String answer = result.get().trim();
-            if (!answer.equals("4")) {
+            if (!answer.equals(num1 + num2)) {
                 System.out.println(answer);
             }
         }
