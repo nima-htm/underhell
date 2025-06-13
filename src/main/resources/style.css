@@ -57,3 +57,58 @@
     -fx-font-size: 14px;
     -fx-alignment: center;
 }
+.dialog-pane {
+    -fx-background-color: linear-gradient(to bottom right, #3b0a60, #1b3c91);
+    -fx-border-color: #a48be0;
+    -fx-border-width: 3;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-font-family: "Georgia", serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, #a48be0, 10, 0.3, 0, 0);
+}
+
+.header-panel {
+    -fx-background-color: transparent;
+    -fx-text-fill: #d2c5ff;
+}
+
+.content.label {
+    -fx-text-fill: #d2c5ff;
+}
+
+.text-field {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+    -fx-border-color: #9f91e0;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, #a48be0, 8, 0.5, 0, 0);
+    -fx-padding: 5 10 5 10;
+}
+
+/* Optional: style the buttons for a magical look */
+.button {
+    -fx-background-color: linear-gradient(to top left, #6a52b8, #5142a9);
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #c4a3ff;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, #c4a3ff, 6, 0.2, 0, 0);
+}
+
+.button:hover {
+    -fx-background-color: linear-gradient(to bottom right, #7c62d9, #5e4bc4);
+    -fx-cursor: hand;
+}
+.header-panel {
+    -fx-background-color: transparent;
+}
+
+.header-panel .label {
+    -fx-text-fill: #d2c5ff;
+    -fx-font-family: "Georgia", serif;
+    -fx-font-size: 16px;
+}

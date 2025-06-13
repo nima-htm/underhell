@@ -1,7 +1,10 @@
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -40,6 +43,7 @@ public class map extends Application {
 
     private Set<Point2D> puzzleLocations = Set.of(new Point2D(4, 4), new Point2D(8, 2));
     private Set<Point2D> doorLocation = Set.of(new Point2D(18, 8)); // Change coordinates as needed
+    private Set<Point2D> keyLocation = Set.of(new Point2D(6, 13));
 
     Image playerWalkGif = new Image(getClass().getResourceAsStream("/R.gif")); // Ensure the file is in `resources`
     Image playerIdleImage = new Image(getClass().getResourceAsStream("/download.png"));
@@ -148,6 +152,9 @@ public class map extends Application {
         if (puzzleLocations.contains(newPos)) {
             showPuzzleDialog(stage);
         }
+        if (keyLocation.contains(newPos)) {
+            showKey(stage);
+        }
     }
 
     private void showPuzzleDialog(Stage stage) {
@@ -167,6 +174,33 @@ public class map extends Application {
                 System.out.println(answer);
             }
         }
+    }
+    private void showKey(Stage stage) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("A Mysterious Door!");
+        dialog.setHeaderText("A locked door blocks your path.");
+        dialog.setContentText("Enter the key to proceed:");
+
+        Image doorImage = new Image(getClass().getResource("/d.jfif").toExternalForm()); // Your door image
+        ImageView imageView = new ImageView(doorImage);
+        imageView.setFitWidth(100);
+        imageView.setFitHeight(100);
+        dialog.setGraphic(imageView);
+
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+
+        TextField inputField = dialog.getEditor();
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(answer -> {
+            String trimmed = answer.trim();
+            if (trimmed.equalsIgnoreCase("moonkey")) {
+                System.out.println("Correct key! Door opens.");
+            } else {
+                System.out.println("Wrong key.");
+            }
+        });
     }
 
     public static void main(String[] args) {
