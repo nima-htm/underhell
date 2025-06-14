@@ -49,10 +49,20 @@ public class BattleManager extends Application {
     Item healpotion = new Item(player);
     Label hpLabel = new Label("");
     Label atkLabel = new Label("");
+    private map currentMapApp;
+    private Scene mapScene;
+    private Stage primaryStage;
+
+    public BattleManager(map mapApp, Scene mapScene, Stage stage) {
+        this.currentMapApp = mapApp;
+        this.mapScene = mapScene;
+        this.primaryStage = stage;
+    }
 
     @Override
     public void start(Stage stage) {
         alastor.setPlayer(player);
+
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
         Scene scene = new Scene(root, 500, 450, Color.BLUE);
@@ -716,17 +726,30 @@ public class BattleManager extends Application {
     }
 
     private void gameOver(Stage stage) {
-
-        Label gameOverLabel = new Label("GAME OVER");
-        gameOverLabel.setTextFill(Color.RED);
-        gameOverLabel.setStyle("-fx-font-size: 64px; -fx-font-weight: bold;");
-        StackPane gameOverRoot = new StackPane(gameOverLabel);
+        StackPane gameOverRoot = new StackPane();
         gameOverRoot.setStyle("-fx-background-color: black;");
-        shakeStage(stage);
-        mediaPlayer.pause();
-        AudioClip sound = new AudioClip(getClass().getResource("/sounds/jumpscare.mp3").toExternalForm());
-        sound.play();
-        sound.play();
+
+        Image alastorImage = new Image(getClass().getResource("/villain.png").toExternalForm());
+        ImageView alastorView = new ImageView(alastorImage);
+        alastorView.setFitWidth(300);
+        alastorView.setFitHeight(300);
+
+        Rectangle dialogueBackground = new Rectangle(300, 100);
+        dialogueBackground.setFill(Color.rgb(0, 0, 0, 0.8));
+        dialogueBackground.setArcWidth(20);
+        dialogueBackground.setArcHeight(50);
+        dialogueBackground.setStroke(Color.WHITE);
+        dialogueBackground.setStrokeWidth(2);
+
+        Text dialogueText = new Text("you lost");
+        dialogueText.setFill(Color.WHITE);
+        dialogueText.setStyle("-fx-font-size: 20px;");
+        dialogueText.setWrappingWidth(280);
+
+        StackPane dialogueBar = new StackPane(dialogueBackground, dialogueText);
+        dialogueBar.setTranslateY(180);
+
+        gameOverRoot.getChildren().addAll(alastorView, dialogueBar);
 
         Scene gameOverScene = new Scene(gameOverRoot, 800, 600);
         stage.setScene(gameOverScene);
@@ -736,9 +759,10 @@ public class BattleManager extends Application {
         stage.setResizable(false);
         stage.centerOnScreen();
 
+        mediaPlayer.stop();
 
-        PauseTransition delay = new PauseTransition(Duration.seconds(4));
-        delay.setOnFinished(e -> Platform.exit());
+        PauseTransition delay = new PauseTransition(Duration.seconds(3));
+        delay.setOnFinished(event -> Platform.exit());
         delay.play();
     }
 

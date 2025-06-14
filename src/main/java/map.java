@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class map extends Application {
+    private Scene scene;
     ImageView player;
     final int TILE_SIZE = 40;
     final int MAP_WIDTH = 20;
@@ -48,6 +49,7 @@ public class map extends Application {
             "####################"
     };
 
+
     private Set<Point2D> puzzleLocations = Set.of(new Point2D(4, 4), new Point2D(8, 2));
     private Set<Point2D> doorLocation = Set.of(new Point2D(18, 8)); // Change coordinates as needed
     private Set<Point2D> keyLocation = Set.of(new Point2D(6, 13));
@@ -56,6 +58,14 @@ public class map extends Application {
     Image playerIdleImage = new Image(getClass().getResourceAsStream("/download.png"));
     Image water = new Image(getClass().getResourceAsStream("/w.gif"));
     Image wood = new Image(getClass().getResourceAsStream("/wood.jpg"));
+
+    private double initialPlayerX = 1 * TILE_SIZE + 5;
+    private double initialPlayerY = 1 * TILE_SIZE + 5;
+
+    public void resetPlayerPosition() {
+        player.setTranslateX(initialPlayerX);
+        player.setTranslateY(initialPlayerY);
+    }
 
     @Override
     public void start(Stage stage) {
@@ -101,7 +111,7 @@ public class map extends Application {
 
         root.getChildren().add(player);
 
-        Scene scene = new Scene(root);
+        this.scene = new Scene(root);
         scene.setOnKeyPressed(event -> {
             int dx = 0, dy = 0;
             if (event.getCode() == KeyCode.W) dy = -1;
@@ -132,11 +142,11 @@ public class map extends Application {
 
         if (doorLocation.contains(newPos)) {
             try {
-                BattleManager battleManager = new BattleManager();
-                Stage currentStage = new Stage();
+                switchToBattleScene(stage, root);
 
+                BattleManager battleManager = new BattleManager(this, scene, stage);
+                battleManager.start(stage);
 
-                battleManager.start(currentStage);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -167,6 +177,23 @@ public class map extends Application {
         if (keyLocation.contains(newPos)) {
             showKey(stage);
         }
+    }
+
+    private void switchToBattleScene(Stage stage, Pane gameRoot) {
+        Label battleLabel = new Label("Entering Hell...");
+        battleLabel.setTextFill(Color.WHITE);
+        battleLabel.setStyle("-fx-font-size: 48px; -fx-font-weight: bold;");
+
+        StackPane battleRoot = new StackPane(battleLabel);
+        battleRoot.setStyle("-fx-background-color: #000000;");
+
+        Scene battleScene = new Scene(battleRoot, 1000, 800); // Larger size
+
+        stage.setScene(battleScene);
+        stage.setFullScreen(false);
+        stage.setWidth(1000);
+        stage.setHeight(800);
+        stage.centerOnScreen();
     }
 
     private void showPuzzleDialog(Stage stage) {
