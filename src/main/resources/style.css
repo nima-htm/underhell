@@ -89,20 +89,20 @@
 }
 
 /* Optional: style the buttons for a magical look */
-.button {
-    -fx-background-color: linear-gradient(to top left, #6a52b8, #5142a9);
-    -fx-text-fill: white;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
-    -fx-border-color: #c4a3ff;
-    -fx-border-width: 1.5;
-    -fx-effect: dropshadow(gaussian, #c4a3ff, 6, 0.2, 0, 0);
-}
+/*.button {*/
+/*    -fx-background-color: linear-gradient(to top left, #6a52b8, #5142a9);*/
+/*    -fx-text-fill: white;*/
+/*    -fx-background-radius: 8;*/
+/*    -fx-border-radius: 8;*/
+/*    -fx-border-color: #c4a3ff;*/
+/*    -fx-border-width: 1.5;*/
+/*    -fx-effect: dropshadow(gaussian, #c4a3ff, 6, 0.2, 0, 0);*/
+/*}*/
 
-.button:hover {
-    -fx-background-color: linear-gradient(to bottom right, #7c62d9, #5e4bc4);
-    -fx-cursor: hand;
-}
+/*.button:hover {*/
+/*    -fx-background-color: linear-gradient(to bottom right, #7c62d9, #5e4bc4);*/
+/*    -fx-cursor: hand;*/
+/*}*/
 .header-panel {
     -fx-background-color: transparent;
 }

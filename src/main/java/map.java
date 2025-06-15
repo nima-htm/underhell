@@ -258,9 +258,9 @@ public class map extends Application {
 
 
         Optional<String> result = dialog.showAndWait();
-        result.ifPresent(answer -> {
-
-        });
+//        result.ifPresent(answer -> {
+//
+//        });
     }
     private void gameOver(Stage stage) {
 
