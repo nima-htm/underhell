@@ -7,14 +7,14 @@ public class Player {
     private String name;
     private int level;
     private IntegerProperty hp = new SimpleIntegerProperty(100);
-    private ArrayList<Integer> damage = new ArrayList<Integer>();
+    private ArrayList<Integer> damage = new ArrayList<>();
 
     Player(String name, int hp, int level) {
         this.hp.set(hp);
         this.name = name;
         this.level = level;
-        this.damage.add(5);
         this.damage.add(10);
+        this.damage.add(15);
     }
 
     public ArrayList<Integer> getDamages() {

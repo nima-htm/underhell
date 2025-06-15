@@ -29,6 +29,8 @@ import java.util.Set;
 
 public class BattleManager extends Application {
     Media bgMusic = new Media(getClass().getResource("/sounds/bg_music.m4a").toExternalForm());
+    Media outro = new Media(getClass().getResource("/sounds/outro.mp3").toExternalForm());
+
     Random random = new Random();
     private Rectangle battleBox;
     private Rectangle playerHPBackground;
@@ -37,6 +39,8 @@ public class BattleManager extends Application {
     private Path heart;
     private Image villainImg;
     private ImageView villainImage;
+    private Image villainImg_hurt;
+    private ImageView villainImage_hurt;
     private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
     private Button t_option1, t_option2, t_option3;
     private Button heal, BoostATK;
@@ -44,7 +48,7 @@ public class BattleManager extends Application {
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
     Button talkButton = new Button("TALK");
-    Alastor alastor = new Alastor(100);
+    Alastor alastor = new Alastor(5);
     Item atkUp = new Item(player);
     Item healpotion = new Item(player);
     Label hpLabel = new Label("");
@@ -58,6 +62,13 @@ public class BattleManager extends Application {
         this.mapScene = mapScene;
         this.primaryStage = stage;
     }
+
+
+    // AudioClips
+
+    AudioClip btnClicked = new AudioClip(getClass().getResource("/sounds/select-sound.mp3").toExternalForm());
+    AudioClip ItemClicked = new AudioClip(getClass().getResource("/sounds/item.mp3").toExternalForm());
+    AudioClip slashEnemy = new AudioClip(getClass().getResource("/sounds/slash.mp3").toExternalForm());
 
     @Override
     public void start(Stage stage) {
@@ -75,6 +86,9 @@ public class BattleManager extends Application {
         Text playerHp = new Text();
         playerHp.textProperty().bind(Bindings.concat(
                 " HP:", player.getHp().asString()));
+        Text playerAtk = new Text("Atk Boosted");
+        playerAtk.setFill(Color.BLUE);
+        playerAtk.getStyleClass().add("game-label");
 
         playerHp.setFill(Color.WHITE);
         playerHp.getStyleClass().add("game-label");
@@ -129,10 +143,11 @@ public class BattleManager extends Application {
         playerNameText.xProperty().bind(playerHPFrame.xProperty().subtract(120));
         playerHp.yProperty().bind(playerHPFrame.yProperty().add(10));
         playerHp.xProperty().bind(playerHPFrame.xProperty().subtract(70));
-
         playerLevelText.yProperty().bind(playerHPFrame.yProperty().add(10));
         playerLevelText.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(20));
-
+        playerAtk.yProperty().bind(playerHPFrame.yProperty().add(10));
+        playerAtk.xProperty().bind(playerHPFrame.xProperty().add(playerHPFrame.widthProperty()).add(70));
+        playerAtk.setVisible(false);
 
         villainImg = new Image(getClass().getResource("/villain.png").toExternalForm());
         villainImage = new ImageView(villainImg);
@@ -140,6 +155,15 @@ public class BattleManager extends Application {
         villainImage.setFitHeight(300);
         villainImage.layoutXProperty().bind(scene.widthProperty().subtract(villainImage.fitWidthProperty()).subtract(120));
         villainImage.layoutYProperty().bind(scene.heightProperty().multiply(0.15));
+
+        villainImg_hurt = new Image(getClass().getResource("/villain-hurt.png").toExternalForm());
+        villainImage_hurt = new ImageView(villainImg_hurt);
+        villainImage_hurt.setFitWidth(300);
+        villainImage_hurt.setFitHeight(300);
+        villainImage_hurt.layoutXProperty().bind(scene.widthProperty().subtract(villainImage_hurt.fitWidthProperty()).subtract(120));
+        villainImage_hurt.layoutYProperty().bind(scene.heightProperty().multiply(0.15));
+        villainImage_hurt.setVisible(false);
+
         alastor.setRoot(root);
         alastor.setHeart(heart);
 
@@ -166,11 +190,13 @@ public class BattleManager extends Application {
         fightButton.setOnAction(e -> {
             if (currentState != GameState.PLAYER_CHOICE_OPTIONS) return;
             currentState = GameState.PLAYER_CHOICE_FIGHT;
+            btnClicked.play();
             options_visibility(fightButton, talkButton, itemButton, false);
             heart.setVisible(false);
 
             ArrayList<Integer> damages;
             if (atkUp.getAtkInUse() == 1) {
+                playerAtk.setVisible(false);
                 damages = player.getDamages();
                 atkUp.setAtkInUse(0);
             } else {
@@ -187,6 +213,10 @@ public class BattleManager extends Application {
 
             bossFightPane[0] = BossFight(() -> {
                 alastor.setHp(villainHP[0]);
+                if (alastor.getHp() <= 0) {
+                    GameFinished();
+                    return;
+                }
                 currentState = GameState.ENEMY_TURN;
                 showDialogue("You dare to stand against me?!\nWretched human ",6);
                 PauseTransition pause = new PauseTransition(Duration.seconds(3));
@@ -207,6 +237,8 @@ public class BattleManager extends Application {
                 heart.setLayoutX(centerX);
                 heart.setLayoutY(centerY);
                 heart.setVisible(true);
+                villainImage.setVisible(true);
+                villainImage_hurt.setVisible(false);
             }, villainHP, damages);
 
         });
@@ -215,6 +247,7 @@ public class BattleManager extends Application {
         itemButton.setOnAction(e -> {
             if (currentState == GameState.ENEMY_TURN) return;
             currentState = GameState.PLAYER_CHOICE_ITEM;
+            btnClicked.play();
             options_visibility(fightButton, talkButton, itemButton, false);
             heart.setVisible(false);
             item_options_visibility(true);
@@ -228,6 +261,7 @@ public class BattleManager extends Application {
         talkButton.setOnAction(e -> {
             if (currentState == GameState.ENEMY_TURN) return;
             currentState = GameState.PLAYER_CHOICE_TALK;
+            btnClicked.play();
             options_visibility(fightButton, talkButton, itemButton, false);
             heart.setVisible(false);
             talk_options_visibility(true);
@@ -245,6 +279,8 @@ public class BattleManager extends Application {
         atkLabel = createLable(atkUp.getAtkCount().get() + "", scene, 2, atkLabel);
         BoostATK.setOnAction(e -> {
             if (atkUp.getHealCount().get() > 0) {
+                playerAtk.setVisible(true);
+                ItemClicked.play();
                 atkUp.setAtkInUse(1);
                 atkUp.atkuse();
                 atkLabel.setText(atkUp.getAtkCount().get() + "");
@@ -258,11 +294,13 @@ public class BattleManager extends Application {
                 healpotion.healuse();
                 hpLabel.setText(healpotion.getHealCount().get() + "");
                 healpotion.hpUp();
+                ItemClicked.play();
                 handlePlayerChoiceTwo(battleBox, root, player, "Postponing your death for a few seconds?\nHow foolish");
             }
             hpLabel.setText(healpotion.getHealCount().get() + "");
         });
         t_option1.setOnAction(e -> {
+            ItemClicked.play();
             talk_options_visibility(false);
             options_visibility(fightButton, talkButton, itemButton, false);
             showDialogue("How childish\nYou may leave...for now", 2);
@@ -275,6 +313,7 @@ public class BattleManager extends Application {
         });
 
         t_option2.setOnAction(e -> {
+            ItemClicked.play();
             showDialogue("Lowly peasent", 2);
             PauseTransition pause = new PauseTransition(Duration.seconds(2));
             pause.setOnFinished(e2 -> {
@@ -283,6 +322,7 @@ public class BattleManager extends Application {
             pause.play();
         });
         t_option3.setOnAction(e -> {
+            ItemClicked.play();
             showDialogue("You stay silent. The air grows heavy.", 2);
             PauseTransition pause = new PauseTransition(Duration.seconds(2));
             pause.setOnFinished(e2 -> {
@@ -313,12 +353,12 @@ public class BattleManager extends Application {
         dialogueBar.setVisible(false);
 
         root.getChildren().addAll(
-                villainImage,
-                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,
+                villainImage, villainImage_hurt,
+                battleBox, heart, playerHPBackground, dialogueBar, playerHPFrame, hpLabel,playerAtk,
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
-//        GameBeginningMethods();
+       GameBeginningMethods();
 
         final Set<KeyCode> activeKeys = new HashSet<>();
         scene.setOnKeyPressed(event -> {
@@ -372,28 +412,6 @@ public class BattleManager extends Application {
         });
 
     }
-
-    private void showDialogue2(String text, Runnable onFinished) {
-        dialogueText.setText("");  // Clear previous text
-        dialogueBar.setVisible(true);
-        final int[] index = {0};
-
-        Timeline timeline = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(50), event -> {
-            if (index[0] < text.length()) {
-                dialogueText.setText(dialogueText.getText() + text.charAt(index[0]));
-                index[0]++;
-            } else {
-                timeline.stop();
-                if (onFinished != null) onFinished.run();
-            }
-        });
-
-        timeline.getKeyFrames().add(keyFrame);
-        timeline.setCycleCount(text.length());
-        timeline.play();
-    }
-
 
     private void showDialogue(String message, int duration) {
         dialogueText.setText(message);
@@ -511,7 +529,7 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-            int choice = random.nextInt(2);
+            int choice = random.nextInt(3);
             int sd = switch (choice) {
                 case 0 -> {
                     alastor.throwSpearAll();
@@ -521,15 +539,18 @@ public class BattleManager extends Application {
                     alastor.Laser(r, p, P);
                     yield 19;
                 }
-                default -> 1;
+                case 2 -> {
+                    alastor.JumpyHeart(battleBox,heart);
+                    yield 15;
+                }
+                default -> 0;
             };
-
 
             PauseTransition resume = new PauseTransition(Duration.seconds(sd + 1));
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
-                heart.setVisible(true);
+                heart.setVisible(false);
             });
             resume.play();
         });
@@ -557,6 +578,7 @@ public class BattleManager extends Application {
         imageView.setFitWidth(RECT_WIDTH);
         imageView.setFitHeight(RECT_HEIGHT);
         imageView.setPreserveRatio(false);
+
         Rectangle clip = new Rectangle(0, 0, RECT_WIDTH, RECT_HEIGHT);
         imageView.setClip(clip);
         Rectangle border = new Rectangle(0, 0, RECT_WIDTH, RECT_HEIGHT);
@@ -611,6 +633,9 @@ public class BattleManager extends Application {
                     Hp[0] -= Damages.get(1);
                 else
                     Hp[0] -= Damages.get(0);
+                slashEnemy.play();
+                villainImage.setVisible(false);
+                villainImage_hurt.setVisible(true);
 
                 double updatedHpPercent = Hp[0] / maxHp;
                 hpBarForeground.setWidth(HP_BAR_WIDTH * updatedHpPercent);
@@ -724,6 +749,82 @@ public class BattleManager extends Application {
         });
         pause.play();
     }
+    MediaPlayer outroMediaPlayer = new MediaPlayer(outro);
+    private void GameFinished() {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(this::GameFinished);
+            return;
+        }
+
+        currentState = GameState.GAME_FINISHED;
+
+        options_visibility(fightButton, talkButton, itemButton, false);
+        talk_options_visibility(false);
+        item_options_visibility(false);
+        hpLabel.setVisible(false);
+        atkLabel.setVisible(false);
+        heart.setVisible(false);
+
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+        }
+
+        AudioClip deathSound = new AudioClip(getClass().getResource("/sounds/death.mp3").toExternalForm());
+
+
+        Pane root = (Pane) fightButton.getScene().getRoot();
+        if (root == null) {
+            return;
+        }
+        Rectangle blackoutRectangle = new Rectangle();
+        blackoutRectangle.widthProperty().bind(root.widthProperty());
+        blackoutRectangle.heightProperty().bind(root.heightProperty());
+        blackoutRectangle.setFill(Color.BLACK);
+        blackoutRectangle.setOpacity(0);
+
+
+        Label victoryLabel = new Label("V I C T O R Y");
+        victoryLabel.setStyle("-fx-font-size: 50px; -fx-font-weight: bold; -fx-text-fill: white;");
+        victoryLabel.layoutXProperty().bind(root.widthProperty().subtract(victoryLabel.widthProperty()).divide(2));
+        victoryLabel.layoutYProperty().bind(root.heightProperty().multiply(0.4));
+        victoryLabel.setOpacity(0);
+
+        Button quitButton = new Button("Quit Game");
+        quitButton.getStyleClass().add("game-button");
+        quitButton.layoutXProperty().bind(root.widthProperty().subtract(quitButton.widthProperty()).divide(2));
+        quitButton.layoutYProperty().bind(victoryLabel.layoutYProperty().add(80));
+        quitButton.setOpacity(0);
+        quitButton.setOnAction(e -> Platform.exit());
+
+        root.getChildren().addAll(blackoutRectangle, victoryLabel, quitButton);
+
+        FadeTransition fadeToBlack = new FadeTransition(Duration.seconds(3.0), blackoutRectangle);
+        fadeToBlack.setToValue(1);
+
+        fadeToBlack.setOnFinished(e -> {
+            deathSound.play();
+
+        });
+
+        FadeTransition textFadeIn = new FadeTransition(Duration.seconds(2), victoryLabel);
+        textFadeIn.setToValue(1);
+
+        FadeTransition buttonFadeIn = new FadeTransition(Duration.seconds(2), quitButton);
+        buttonFadeIn.setToValue(1);
+
+        ParallelTransition uiFadeIn = new ParallelTransition(textFadeIn, buttonFadeIn);
+
+
+        SequentialTransition sequence = new SequentialTransition(
+                new PauseTransition(Duration.seconds(1.0)),
+                fadeToBlack,
+                new PauseTransition(Duration.seconds(1.0)),
+                uiFadeIn
+        );
+        outroMediaPlayer.play();
+        sequence.play();
+    }
+
 
     private void gameOver(Stage stage) {
         StackPane gameOverRoot = new StackPane();
