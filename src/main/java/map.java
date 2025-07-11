@@ -2,11 +2,9 @@ import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -14,53 +12,71 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.Group;
 
-import java.util.Random;
-
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class map extends Application {
     private Scene scene;
-    ImageView player;
-    final int TILE_SIZE = 40;
-    final int MAP_WIDTH = 20;
-    final int MAP_HEIGHT = 15;
-
-    String[] mapData = {
-            "####################",
-            "#........#.........#",
-            "#.######.#.#####...#",
-            "#.#....#.#.....#...#",
-            "#.#.##.#.###.#.###.#",
-            "#.#....#.....#.....#",
-            "#.~~~~~~.###########",
-            "#.~~~~~~...........#",
-            "#.======..........@#",
-            "#.~~~~~~...........#",
-            "#.~~~~~~..###......#",
-            "#.............######",
-            "######........~~~~~#",
-            "#....#........~~~~~#",
-            "####################"
+    private ImageView player;
+    private final int TILE_SIZE = 40;
+    private final int MAP_WIDTH = 50;
+    private final int MAP_HEIGHT = 30;
+    private boolean RightDir=true;
+    private String[] mapData= {
+            "##################################################",
+            "#.............#.......................#...........#",
+            "#.######.#####.#.#########.#########.#.#####.#####.#",
+            "#.#....#.....#.#.#.......#.#.......#.#.#...#.....#.#",
+            "#.#.##.#####.#.#.#.###.#.#.#.###.#.#.#.#.###.###.#.#",
+            "#P#.#.......#.#.#...#.#.#...#...#.#.#.#...#...#.#.#",
+            "#.#.#.#####.#.#.#####.#.#####.###.#.#.###.###.#.#.#",
+            "#.#.#.....#.#.#.....#.#.......#...#.#.#...#...#.#.#",
+            "#.#.#####.#.#.#####.#.#########.###.#.#.#.###.#.#.#",
+            "#.#.....#.#.#.......#.........#.....#.#.#...#.#.#.#",
+            "#.#####.#.#.###################.#####.#.#.#.#.#.#.#",
+            "#.....#.#.#...............#.....#...#.#.#.#.#...#.#",
+            "#####.#.#.#############.#.#.#####.#.#.#.#.#.#####.#",
+            "#...#.#.#.#.........#.#.#.#.#...#.#.#.#.#.#.......#",
+            "#.#.#.#.#.#.#######.#.#.#.#.#.#.#.#.#.#.#.#########",
+            "#.#.#.#.#.#.#.....#.#.#.#.#.#.#.#.#.#.#.#.........#",
+            "#.#.#.#.#.#.#.###.#.#.#.#.#.#.#.#.#.#.#.#########.#",
+            "#.#.#.#.#.#.#.#K#.#.#.#.#.#.#.#.#.#.#.#.......#...#",
+            "#.#.#.#.#.#.#.###.#.#.#.#.#.#.#.#.#.#.#########.#.#",
+            "#.#.#.#.#.#.#.....#.#.#.#.#.#.#.#.#.#.........#.#.#",
+            "#.#.#.#.#.#.#######.#.#.#.#.#.#.#.#.#.#########.#.#",
+            "#.#.#.#.#.#.........#.#.#.#.#.#.#.#.#.#.........#.#",
+            "#.#.#.#.#.###########.#.#.#.#.#.#.#.#.#.#########.#",
+            "#.#.#.#.#.............#.#.#.#.#.#.#.#.#.........#.#",
+            "#.#.#.#.###############.#.#.#.#.#.#.#.#.#########.#",
+            "#.#.#.#.................#.#.#.#.#.#.#.#.........#.#",
+            "#.#.#.###################.#.#.#.#.#.#.#.#########.#",
+            "#.#.#.......................#.#.#.#.#.#.........#.#",
+            "#=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.@#",
+            "##################################################"
     };
 
+    //coordinates
+    private Set<Point2D> puzzleLocations= Set.of(new Point2D(5, 5), new Point2D(MAP_WIDTH - 5, 5));
+    private Set<Point2D> doorLocation= Set.of(new Point2D(49, 28));
+    private Set<Point2D> keyLocation= Set.of(new Point2D(3, MAP_HEIGHT - 3));
+    private Set<Point2D> hiddenkey= Set.of(new Point2D(MAP_WIDTH / 2 + 1, MAP_HEIGHT / 2));
 
-    private Set<Point2D> puzzleLocations = Set.of(new Point2D(4, 4), new Point2D(8, 2));
-    private Set<Point2D> doorLocation = Set.of(new Point2D(18, 8)); // Change coordinates as needed
-    private Set<Point2D> keyLocation = Set.of(new Point2D(6, 13));
-    private Set<Point2D> hiddenkey = Set.of(new Point2D(14, 13));
-    Image playerWalkGif = new Image(getClass().getResourceAsStream("/R.gif")); // Ensure the file is in `resources`
-    Image playerIdleImage = new Image(getClass().getResourceAsStream("/download.png"));
-    Image water = new Image(getClass().getResourceAsStream("/w.gif"));
-    Image wood = new Image(getClass().getResourceAsStream("/wood.jpg"));
+    private Image playerWalkGif = new Image(getClass().getResourceAsStream("/R.gif"));
+    private Image playerWalkGiff = new Image(getClass().getResourceAsStream("/L.gif"));
+
+    private Image playerIdleImageRight = new Image(getClass().getResourceAsStream("/Stand(R).png"));
+    private Image playerIdleImageLeft = new Image(getClass().getResourceAsStream("/Stand(L).png"));
+    private Image water = new Image(getClass().getResourceAsStream("/w.gif"));
+    private Image wood = new Image(getClass().getResourceAsStream("/wood.jpg"));
 
     private double initialPlayerX = 1 * TILE_SIZE + 5;
     private double initialPlayerY = 1 * TILE_SIZE + 5;
+
+    private Group world = new Group(); // Holds entire world (tiles + player)
 
     public void resetPlayerPosition() {
         player.setTranslateX(initialPlayerX);
@@ -69,15 +85,7 @@ public class map extends Application {
 
     @Override
     public void start(Stage stage) {
-
-        Pane root = new Pane();
-        root.setPrefSize(MAP_WIDTH * TILE_SIZE, MAP_HEIGHT * TILE_SIZE);
-        player = new ImageView(playerIdleImage);
-        player.setFitWidth(TILE_SIZE - 10);
-        player.setFitHeight(TILE_SIZE - 10);
-        player.setTranslateX(1 * TILE_SIZE + 5);
-        player.setTranslateY(1 * TILE_SIZE + 5);
-
+        Pane root = new Pane(world);
         Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
         Image floorImage = new Image(getClass().getResourceAsStream("/OIP.jfif"));
         Image doorImage = new Image(getClass().getResourceAsStream("/dd.png"));
@@ -86,108 +94,147 @@ public class map extends Application {
             for (int x = 0; x < MAP_WIDTH; x++) {
                 char tile = mapData[y].charAt(x);
                 ImageView tileView = new ImageView();
-
                 tileView.setFitWidth(TILE_SIZE);
                 tileView.setFitHeight(TILE_SIZE);
                 tileView.setTranslateX(x * TILE_SIZE);
                 tileView.setTranslateY(y * TILE_SIZE);
 
-                if (tile == '#') {
-                    tileView.setImage(wallImage);
-                } else if (tile == '.') {
-                    tileView.setImage(floorImage);
-                } else if (tile == '=') {
-                    tileView.setImage(wood);
-                } else if (tile == '@') {
-                    tileView.setImage(doorImage); // Define doorImage like other terrain images
-                } else {
-                    tileView.setImage(water);
+                switch (tile) {
+                    case '#': tileView.setImage(wallImage); break;
+                    case '.': tileView.setImage(floorImage); break;
+                    case '~': tileView.setImage(water); break;
+                    case '=': tileView.setImage(wood); break;
+                    case '@': tileView.setImage(doorImage); break;
+                    default: tileView.setImage(floorImage); break;
                 }
-
-                root.getChildren().add(tileView);
+                world.getChildren().add(tileView);
             }
         }
 
+        player = new ImageView(playerIdleImageRight);
+        player.setFitWidth(TILE_SIZE - 10);
+        player.setFitHeight(TILE_SIZE - 10);
+        player.setTranslateX(initialPlayerX);
+        player.setTranslateY(initialPlayerY);
+        world.getChildren().add(player);
 
-        root.getChildren().add(player);
-
-        this.scene = new Scene(root);
+        this.scene = new Scene(root, 1280, 720); // fixed screen size
         scene.setOnKeyPressed(event -> {
             int dx = 0, dy = 0;
             if (event.getCode() == KeyCode.W) dy = -1;
             if (event.getCode() == KeyCode.S) dy = 1;
             if (event.getCode() == KeyCode.A) dx = -1;
             if (event.getCode() == KeyCode.D) dx = 1;
-            movePlayer(dx, dy, stage, root);
+            movePlayer(dx, dy, stage);
         });
+
         root.setStyle("-fx-background-color: black;");
         stage.setTitle("UnderHell");
         stage.setScene(scene);
         stage.show();
+
+        centerCamera(stage); // initial centering
     }
 
-    private void movePlayer(int dx, int dy, Stage stage, Pane root) {
-        if (dx == 0 && dy == 0) {
-            player.setImage(playerIdleImage); // No movement → idle image
-            return;
-        }
+    private void movePlayer(int dx, int dy, Stage stage) {
+
+
+        if (dx == 0 && dy == 0)
+            player.setImage(playerIdleImageRight);
 
         int x = (int) (player.getTranslateX() / TILE_SIZE);
         int y = (int) (player.getTranslateY() / TILE_SIZE);
-
         int newX = x + dx;
         int newY = y + dy;
-
         Point2D newPos = new Point2D(newX, newY);
 
-        if (doorLocation.contains(newPos)) {
-            try {
-                switchToBattleScene(stage, root);
-
-                BattleManager battleManager = new BattleManager(this, scene, stage);
-                battleManager.start(stage);
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-
         if (newX < 0 || newY < 0 || newX >= MAP_WIDTH || newY >= MAP_HEIGHT) return;
-        if (mapData[newY].charAt(newX) == '#') return;
-        if (mapData[newY].charAt(newX) == '~' && !hiddenkey.contains(new Point2D(newX, newY))) {
+        char nextTile = mapData[newY].charAt(newX);
+        if (nextTile == '#') return;
+        if (nextTile == '~' && !hiddenkey.contains(newPos)) {
             gameOver(stage);
+            return;
         }
-        if (hiddenkey.contains(new Point2D(newX, newY))) {
+
+        if (doorLocation.contains(newPos)) {
+            switchToBattleScene(stage);
+            BattleManager battleManager = new BattleManager(this, scene, stage);
+            battleManager.start(stage);
+        }
+
+        if (hiddenkey.contains(newPos)) {
             hiddenKey(stage);
         }
 
-        // Switch to animated walk gif when moving
-        player.setImage(playerWalkGif);
+        if (dy == 0 && dx < 0) {
+            player.setImage(playerWalkGiff);
+            RightDir = false;
+        }
+        else if (dy == 0 && dx > 0){
+            player.setImage(playerWalkGif);
+            RightDir = true;
+        }
+        else if(dy != 0 && x<=25){
+            player.setImage(playerWalkGif);
+        }
+        else if(dy != 0 && x>25){
+            player.setImage(playerWalkGiff);
+        }
+
         player.setTranslateX(newX * TILE_SIZE + 5);
         player.setTranslateY(newY * TILE_SIZE + 5);
 
-
         PauseTransition delay = new PauseTransition(Duration.millis(200));
-        delay.setOnFinished(e -> player.setImage(playerIdleImage));
+        if(dy == 0 && RightDir)
+            delay.setOnFinished(e -> player.setImage(playerIdleImageRight));
+        else if(dy == 0 && !RightDir)
+            delay.setOnFinished(e -> player.setImage(playerIdleImageLeft));
+        else if(dy != 0 && x<=25)
+            delay.setOnFinished(e -> player.setImage(playerIdleImageRight));
+        else if(dy != 0 && x>25)
+            delay.setOnFinished(e -> player.setImage(playerIdleImageLeft));
+
         delay.play();
 
-        if (puzzleLocations.contains(newPos)) {
+        centerCamera(stage);
+
+        if (puzzleLocations.contains(newPos))
             showPuzzleDialog(stage);
-        }
-        if (keyLocation.contains(newPos)) {
+        if (keyLocation.contains(newPos))
             showKey(stage);
-        }
     }
 
-    private void switchToBattleScene(Stage stage, Pane gameRoot) {
+    private void centerCamera(Stage stage) {
+        double sceneWidth = scene.getWidth();
+        double sceneHeight = scene.getHeight();
+
+        double playerX = player.getTranslateX();
+        double playerY = player.getTranslateY();
+
+        double offsetX = sceneWidth / 2 - playerX;
+        double offsetY = sceneHeight / 2 - playerY;
+
+        double maxOffsetX = 0;
+        double maxOffsetY = 0;
+        double minOffsetX = sceneWidth - MAP_WIDTH * TILE_SIZE;
+        double minOffsetY = sceneHeight - MAP_HEIGHT * TILE_SIZE;
+
+        offsetX = Math.max(minOffsetX, Math.min(maxOffsetX, offsetX));
+        offsetY = Math.max(minOffsetY, Math.min(maxOffsetY, offsetY));
+
+        world.setTranslateX(offsetX);
+        world.setTranslateY(offsetY);
+    }
+
+    private void switchToBattleScene(Stage stage) {
         Label battleLabel = new Label("Entering Hell...");
         battleLabel.setTextFill(Color.WHITE);
         battleLabel.setStyle("-fx-font-size: 48px; -fx-font-weight: bold;");
 
         StackPane battleRoot = new StackPane(battleLabel);
-        battleRoot.setStyle("-fx-background-color: #000000;");
+        battleRoot.setStyle("-fx-background-color: black;");
 
-        Scene battleScene = new Scene(battleRoot, 1000, 800); // Larger size
+        Scene battleScene = new Scene(battleRoot, 1000, 800);
 
         stage.setScene(battleScene);
         stage.setFullScreen(false);
@@ -221,16 +268,13 @@ public class map extends Application {
         dialog.setHeaderText("A locked door blocks your path.");
         dialog.setContentText("Enter the key to proceed:");
 
-        Image doorImage = new Image(getClass().getResource("/d.jfif").toExternalForm()); // Your door image
-        ImageView imageView = new ImageView(doorImage);
+        ImageView imageView = new ImageView(new Image(getClass().getResource("/d.jfif").toExternalForm()));
         imageView.setFitWidth(100);
         imageView.setFitHeight(100);
         dialog.setGraphic(imageView);
 
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
-
-        TextField inputField = dialog.getEditor();
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(answer -> {
@@ -242,6 +286,7 @@ public class map extends Application {
             }
         });
     }
+
     private void hiddenKey(Stage stage) {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("BRILLIANT!~");
@@ -262,6 +307,7 @@ public class map extends Application {
 //
 //        });
     }
+
     private void gameOver(Stage stage) {
 
         Label gameOverLabel = new Label("YOU DIED...");
