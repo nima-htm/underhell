@@ -3,5 +3,6 @@ public enum GameState {
     PLAYER_CHOICE_TALK,
     PLAYER_CHOICE_FIGHT,
     PLAYER_CHOICE_ITEM,
-    ENEMY_TURN
+    ENEMY_TURN,
+    GAME_FINISHED,
 }

@@ -29,6 +29,8 @@ import java.util.Set;
 
 public class BattleManager extends Application {
     Media bgMusic = new Media(getClass().getResource("/sounds/bg_music.m4a").toExternalForm());
+    Media outro = new Media(getClass().getResource("/sounds/outro.mp3").toExternalForm());
+
     Random random = new Random();
     private Rectangle battleBox;
     private Rectangle playerHPBackground;
@@ -46,7 +48,7 @@ public class BattleManager extends Application {
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
     Button talkButton = new Button("TALK");
-    Alastor alastor = new Alastor(100);
+    Alastor alastor = new Alastor(5);
     Item atkUp = new Item(player);
     Item healpotion = new Item(player);
     Label hpLabel = new Label("");
@@ -201,6 +203,10 @@ public class BattleManager extends Application {
 
             bossFightPane[0] = BossFight(() -> {
                 alastor.setHp(villainHP[0]);
+                if (alastor.getHp() <= 0) {
+                    GameFinished();
+                    return;
+                }
                 currentState = GameState.ENEMY_TURN;
                 showDialogue("You dare to stand against me?!\nWretched human ",6);
                 PauseTransition pause = new PauseTransition(Duration.seconds(3));
@@ -342,7 +348,7 @@ public class BattleManager extends Application {
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
-//        GameBeginningMethods();
+       GameBeginningMethods();
 
         final Set<KeyCode> activeKeys = new HashSet<>();
         scene.setOnKeyPressed(event -> {
@@ -733,6 +739,82 @@ public class BattleManager extends Application {
         });
         pause.play();
     }
+    MediaPlayer outroMediaPlayer = new MediaPlayer(outro);
+    private void GameFinished() {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(this::GameFinished);
+            return;
+        }
+
+        currentState = GameState.GAME_FINISHED;
+
+        options_visibility(fightButton, talkButton, itemButton, false);
+        talk_options_visibility(false);
+        item_options_visibility(false);
+        hpLabel.setVisible(false);
+        atkLabel.setVisible(false);
+        heart.setVisible(false);
+
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+        }
+
+        AudioClip deathSound = new AudioClip(getClass().getResource("/sounds/death.mp3").toExternalForm());
+
+
+        Pane root = (Pane) fightButton.getScene().getRoot();
+        if (root == null) {
+            return;
+        }
+        Rectangle blackoutRectangle = new Rectangle();
+        blackoutRectangle.widthProperty().bind(root.widthProperty());
+        blackoutRectangle.heightProperty().bind(root.heightProperty());
+        blackoutRectangle.setFill(Color.BLACK);
+        blackoutRectangle.setOpacity(0);
+
+
+        Label victoryLabel = new Label("V I C T O R Y");
+        victoryLabel.setStyle("-fx-font-size: 50px; -fx-font-weight: bold; -fx-text-fill: white;");
+        victoryLabel.layoutXProperty().bind(root.widthProperty().subtract(victoryLabel.widthProperty()).divide(2));
+        victoryLabel.layoutYProperty().bind(root.heightProperty().multiply(0.4));
+        victoryLabel.setOpacity(0);
+
+        Button quitButton = new Button("Quit Game");
+        quitButton.getStyleClass().add("game-button");
+        quitButton.layoutXProperty().bind(root.widthProperty().subtract(quitButton.widthProperty()).divide(2));
+        quitButton.layoutYProperty().bind(victoryLabel.layoutYProperty().add(80));
+        quitButton.setOpacity(0);
+        quitButton.setOnAction(e -> Platform.exit());
+
+        root.getChildren().addAll(blackoutRectangle, victoryLabel, quitButton);
+
+        FadeTransition fadeToBlack = new FadeTransition(Duration.seconds(3.0), blackoutRectangle);
+        fadeToBlack.setToValue(1);
+
+        fadeToBlack.setOnFinished(e -> {
+            deathSound.play();
+
+        });
+
+        FadeTransition textFadeIn = new FadeTransition(Duration.seconds(2), victoryLabel);
+        textFadeIn.setToValue(1);
+
+        FadeTransition buttonFadeIn = new FadeTransition(Duration.seconds(2), quitButton);
+        buttonFadeIn.setToValue(1);
+
+        ParallelTransition uiFadeIn = new ParallelTransition(textFadeIn, buttonFadeIn);
+
+
+        SequentialTransition sequence = new SequentialTransition(
+                new PauseTransition(Duration.seconds(1.0)),
+                fadeToBlack,
+                new PauseTransition(Duration.seconds(1.0)),
+                uiFadeIn
+        );
+        outroMediaPlayer.play();
+        sequence.play();
+    }
+
 
     private void gameOver(Stage stage) {
 
