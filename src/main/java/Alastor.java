@@ -234,7 +234,6 @@ public class Alastor extends Villain {
                 double maxY = boxInScene.getMaxY();
 
                 if (totalTime >= 15) {
-                    System.out.println("Game over: Time's up!");
                     for (Group spear : spears) root.getChildren().remove(spear);
                     spears.clear();
                     baseYs.clear();
@@ -248,106 +247,83 @@ public class Alastor extends Villain {
 
                 spawnTimer[0]++;
                 difficultyTimer[0]++;
-                if (spawnTimer[0] % 90 == 0) {
-                    double startX = minX - 40;
+
+                if (spawnTimer[0] % 25 == 0) {
+                    double startX = minX +12.5;
                     patternCounter[0]++;
-                    if (patternCounter[0] % 5 == 0) {
-                        for (int i = 0; i < 5; i++) {
-                            double offset = i * 60;
-                            for (boolean top : new boolean[]{true, false}) {
-                                Polygon tip = new Polygon();
-                                Rectangle shaft = new Rectangle(8, 60);
-                                shaft.setFill(Color.WHITE);
-                                shaft.setLayoutX(4);
-                                if (top) {
-                                    tip.getPoints().addAll(0.0, 0.0, 16.0, 0.0, 8.0, -24.0);
-                                    tip.setLayoutY(60);
-                                } else {
-                                    tip.getPoints().addAll(0.0, 24.0, 16.0, 24.0, 8.0, 0.0);
-                                    tip.setLayoutY(-24);
-                                }
-                                tip.setLayoutX(0);
-                                tip.setFill(Color.WHITE);
-                                Group spear = new Group(shaft, tip);
-                                spear.setLayoutX(startX - offset);
-                                double y = top ? minY + 10 : maxY;
-                                spear.setLayoutY(y);
-                                root.getChildren().add(spear);
-                                spears.add(spear);
-                                baseYs.add(y);
-                                amplitudes.add(4 + rand.nextDouble() * 4 + spearSpeed[0] * 2);
-                                speeds.add(1 + rand.nextDouble() * 3 + spearSpeed[0] * 0.5);
-                                phases.add(rand.nextDouble() * Math.PI * 2);
-                                times.add(1.0);
-                            }
-                        }
-                    } else {
-                        boolean allowBottom = patternCounter[0] > 8;
-                        boolean allowTop = true;
-                        boolean top = allowTop && rand.nextBoolean();
-                        boolean bottom = allowBottom && rand.nextBoolean();
-                        if (!top && !bottom) {
-                            top = patternCounter[0] <= 8 || rand.nextBoolean();
-                            if (!top && allowBottom) bottom = true;
-                        }
-                        if (top) {
-                            int count = 1;
-                            for (int i = 0; i < count; i++) {
-                                double x = startX - i * 30;
-                                double y = minY + 10;
-                                boolean falling = rand.nextDouble() < 0.8;
-                                Rectangle shaft = new Rectangle(8, 100);
-                                shaft.setFill(Color.WHITE);
-                                shaft.setLayoutX(4);
-                                Polygon tip = new Polygon();
-                                tip.getPoints().addAll(0.0, 0.0, 16.0, 0.0, 8.0, -24.0);
-                                tip.setLayoutY(60);
-                                tip.setLayoutX(0);
-                                tip.setFill(Color.WHITE);
-                                Group spear = new Group(shaft, tip);
-                                spear.setLayoutX(x);
-                                spear.setLayoutY(falling ? minY - 80 : y);
-                                root.getChildren().add(spear);
-                                spears.add(spear);
-                                baseYs.add(falling ? spear.getLayoutY() : y);
-                                amplitudes.add(falling ? 0.0 : 10 + rand.nextDouble() * 20 + spearSpeed[0] * 2);
-                                speeds.add(falling ? 0.0 : 1 + rand.nextDouble() * 3 + spearSpeed[0] * 0.5);
-                                phases.add(0.0);
-                                times.add(1.0);
-                            }
-                        }
-                        if (bottom) {
-                            int count = 1;
-                            for (int i = 0; i < count; i++) {
-                                double x = startX - i * 60;
-                                double y = maxY;
-                                Rectangle shaft = new Rectangle(8, 120);
-                                shaft.setFill(Color.WHITE);
-                                shaft.setLayoutX(4);
-                                Polygon tip = new Polygon();
-                                tip.getPoints().addAll(0.0, 24.0, 16.0, 24.0, 8.0, 0.0);
-                                tip.setLayoutY(-24);
-                                tip.setLayoutX(0);
-                                tip.setFill(Color.WHITE);
-                                Group spear = new Group(shaft, tip);
-                                spear.setLayoutX(x);
-                                spear.setLayoutY(y);
-                                root.getChildren().add(spear);
-                                spears.add(spear);
-                                baseYs.add(y);
-                                amplitudes.add(4 + rand.nextDouble() * 4 + spearSpeed[0] * 2);
-                                speeds.add(1 + rand.nextDouble() * 3 + spearSpeed[0] * 0.5);
-                                phases.add(rand.nextDouble() * Math.PI * 2);
-                                times.add(1.0);
-                            }
-                        }
+                    boolean top=true,bottom=true;
+
+//                        boolean allowBottom = patternCounter[0] % 3 == 0;
+//                        boolean allowTop = rand.nextBoolean();
+//                        boolean bottom =  rand.nextBoolean();
+
+                    if (top) {
+                        double x = startX ;
+                        double y = minY + 10;
+                        boolean falling = rand.nextDouble()<0.6;
+
+                        Polygon TopSpear = new Polygon();
+                        TopSpear.getPoints().addAll(
+                                4.0,-60.0,
+                                4.0,10.0,
+                                0.0, 10.0,
+                                8.0, 34.0,
+                                16.0, 10.0,
+                                12.0,10.0,
+                                12.0,-60.0
+                        );
+                        TopSpear.setLayoutY(80);//bouncing distance
+                        TopSpear.setLayoutX(30);
+                        TopSpear.setFill(Color.WHITE);
+
+                        Group spear = new Group(TopSpear);
+                        spear.setLayoutX(x);
+                        spear.setLayoutY(falling ? minY - 80 : y);
+                        root.getChildren().add(spear);
+                        spears.add(spear);
+                        baseYs.add(falling ? spear.getLayoutY() : y);
+                        amplitudes.add(falling ? 0.0 : 10 + rand.nextDouble() * 20 + spearSpeed[0] * 2);
+                        speeds.add(falling ? 0.0 : 1 + rand.nextDouble() * 3 + spearSpeed[0] * 0.5);
+                        phases.add(0.0);
+                        times.add(1.0);
+                    }
+                    if (bottom) {
+                        double x = startX-15;
+                        double y = maxY;
+
+//                                Rectangle shaft = new Rectangle(8, 60);
+//                                shaft.setFill(Color.WHITE);
+//                                shaft.setLayoutX(4);
+
+                        Polygon BottomSpear = new Polygon();
+                        BottomSpear.getPoints().addAll(
+                                16.0,-60.0,
+                                8.0,-84.9,
+                                0.0,-60.0,
+                                4.0,-60.0,
+                                4.0,10.0,
+                                12.0,10.0,
+                                12.0,-60.0
+                        );
+                        BottomSpear.setLayoutY(-15);
+                        BottomSpear.setLayoutX(0);
+                        BottomSpear.setFill(Color.WHITE);
+                        Group spear = new Group(BottomSpear);
+
+                        spear.setLayoutX(x);
+                        spear.setLayoutY(y);
+                        root.getChildren().add(spear);
+                        spears.add(spear);
+                        baseYs.add(y);
+                        amplitudes.add(4 + rand.nextDouble() * 4 + spearSpeed[0] * 2);
+                        speeds.add(1 + rand.nextDouble() * 3 + spearSpeed[0] * 0.5);
+                        phases.add(rand.nextDouble() * Math.PI * 2);
+                        times.add(1.0);
                     }
                 }
 
-                if (difficultyTimer[0] % 600 == 0) {
+                if (difficultyTimer[0] % 80 == 0)
                     spearSpeed[0] += 0.2;
-                    System.out.println("Increased spear speed to " + spearSpeed[0]);
-                }
 
                 List<Integer> toRemove = new ArrayList<>();
                 for (int i = 0; i < spears.size(); i++) {
@@ -357,34 +333,31 @@ public class Alastor extends Villain {
                     Bounds spearBounds = spear.getBoundsInParent();
                     double proposedX = spear.getLayoutX() + spearSpeed[0];
 
-                    if (proposedX + (spearBounds.getMinX() - spear.getLayoutX()) < minX) {
+                    if (proposedX + (spearBounds.getMinX() - spear.getLayoutX()) < minX)
                         proposedX = minX - (spearBounds.getMinX() - spear.getLayoutX());
-                    } else if (proposedX + (spearBounds.getMaxX() - spear.getLayoutX()) > maxX) {
+                    else if (proposedX + (spearBounds.getMaxX() - spear.getLayoutX()) > maxX)
                         proposedX = maxX - (spearBounds.getMaxX() - spear.getLayoutX());
-                    }
                     spear.setLayoutX(proposedX);
 
                     double proposedY;
-                    if (amplitudes.get(i) == 0.0 && speeds.get(i) == 0.0) {
+                    if (amplitudes.get(i) == 0.0 && speeds.get(i) == 0.0)
                         proposedY = spear.getLayoutY() + spearSpeed[0] * 0.8;
-                    } else {
+                    else
                         proposedY = baseYs.get(i) + Math.sin(times.get(i) * speeds.get(i) + phases.get(i)) * amplitudes.get(i);
-                    }
 
-                    if (proposedY + (spearBounds.getMinY() - spear.getLayoutY()) < minY) {
+                    if (proposedY + (spearBounds.getMinY() - spear.getLayoutY()) < minY)
                         proposedY = minY - (spearBounds.getMinY() - spear.getLayoutY());
-                    } else if (proposedY + (spearBounds.getMaxY() - spear.getLayoutY()) > maxY) {
+                    else if (proposedY + (spearBounds.getMaxY() - spear.getLayoutY()) > maxY)
                         proposedY = maxY - (spearBounds.getMaxY() - spear.getLayoutY());
-                    }
+
                     spear.setLayoutY(proposedY);
 
-                    if (spear.getLayoutX() > maxX + 50) {
+                    if (spear.getLayoutX() > maxX -47.5)
                         toRemove.add(i);
-                    }
 
                     if (!isInvincible[0] && spear.getBoundsInParent().intersects(heart.getBoundsInParent())) {
                         System.out.println("Hit by spear!");
-                        p.getdmg(10);
+                        p.getdmg(10);//set damage
                         dmgtaken.play();
                         isInvincible[0] = true;
                         heart.setOpacity(0.5);

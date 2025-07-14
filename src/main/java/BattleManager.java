@@ -69,7 +69,7 @@ public class BattleManager extends Application {
         Scene scene = new Scene(root, 500, 450, Color.BLUE);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setMaximized(true);
-        stage.setResizable(false);
+        stage.setResizable(true);
         Text playerNameText = new Text(player.getName());
         playerNameText.setFill(Color.WHITE);
         playerNameText.getStyleClass().add("game-label");
@@ -113,7 +113,7 @@ public class BattleManager extends Application {
         Rectangle playerHPBackground = new Rectangle();
         playerHPBackground.setFill(Color.GREEN);
         playerHPBackground.widthProperty().bind(
-                player.getHp().divide(100.0).multiply(scene.widthProperty().multiply(0.25))
+                player.getHp().divide(100.0).multiply(scene.widthProperty().multiply(0.185))
         );
         playerHPBackground.setHeight(10);
         playerHPBackground.xProperty().bind(scene.widthProperty().subtract(playerHPBackground.widthProperty()).divide(2));
@@ -519,7 +519,7 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-            int choice = random.nextInt(3);
+            int choice = 2;
             int sd = switch (choice) {
                 case 0 -> {
                     alastor.throwSpearAll();
@@ -823,7 +823,7 @@ public class BattleManager extends Application {
         gameOverLabel.setStyle("-fx-font-size: 64px; -fx-font-weight: bold;");
         StackPane gameOverRoot = new StackPane(gameOverLabel);
         gameOverRoot.setStyle("-fx-background-color: black;");
-        shakeStage(stage);
+//        shakeStage(stage);
         mediaPlayer.pause();
         AudioClip sound = new AudioClip(getClass().getResource("/sounds/jumpscare.mp3").toExternalForm());
         sound.play();
@@ -838,9 +838,10 @@ public class BattleManager extends Application {
         stage.centerOnScreen();
 
 
-        PauseTransition delay = new PauseTransition(Duration.seconds(4));
-        delay.setOnFinished(e -> Platform.exit());
-        delay.play();
+//        PauseTransition delay = new PauseTransition(Duration.seconds(4));
+//        delay.setOnFinished(e -> Platform.exit());
+//        delay.play();
+        Platform.runLater(() -> Platform.exit());
     }
 
     private void shakeStage(Stage stage) {
