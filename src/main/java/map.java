@@ -28,8 +28,8 @@ public class map extends Application {
     private boolean RightDir=true;
     private String[] mapData= {
             "##################################################",
-            "#.............#.......................#...........#",
-            "#.######.#####.#.#########.#########.#.#####.#####.#",
+            "#.$...........#.......................#...........#",
+            "#@######.#####.#.#########.#########.#.#####.#####.#",
             "#.#....#.....#.#.#.......#.#.......#.#.#...#.....#.#",
             "#.#.##.#####.#.#.#.###.#.#.#.###.#.#.#.#.###.###.#.#",
             "#P#.#.......#.#.#...#.#.#...#...#.#.#.#...#...#.#.#",
@@ -55,13 +55,14 @@ public class map extends Application {
             "#.#.#.#.................#.#.#.#.#.#.#.#.........#.#",
             "#.#.#.###################.#.#.#.#.#.#.#.#########.#",
             "#.#.#.......................#.#.#.#.#.#.........#.#",
-            "#=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.@#",
+            "#=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=..#",
             "##################################################"
     };
 
     //coordinates
     private Set<Point2D> puzzleLocations= Set.of(new Point2D(5, 5), new Point2D(MAP_WIDTH - 5, 5));
-    private Set<Point2D> doorLocation= Set.of(new Point2D(49, 28));
+    private Set<Point2D> doorLocation= Set.of(new Point2D(1, 2));
+    private Set<Point2D> doorLocation2= Set.of(new Point2D(2, 1));
     private Set<Point2D> keyLocation= Set.of(new Point2D(3, MAP_HEIGHT - 3));
     private Set<Point2D> hiddenkey= Set.of(new Point2D(MAP_WIDTH / 2 + 1, MAP_HEIGHT / 2));
 
@@ -89,6 +90,7 @@ public class map extends Application {
         Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
         Image floorImage = new Image(getClass().getResourceAsStream("/OIP.jfif"));
         Image doorImage = new Image(getClass().getResourceAsStream("/dd.png"));
+        Image RedDoorImage = new Image(getClass().getResourceAsStream("/reddoor.png"));
 
         for (int y = 0; y < MAP_HEIGHT; y++) {
             for (int x = 0; x < MAP_WIDTH; x++) {
@@ -105,6 +107,7 @@ public class map extends Application {
                     case '~': tileView.setImage(water); break;
                     case '=': tileView.setImage(wood); break;
                     case '@': tileView.setImage(doorImage); break;
+                    case '$': tileView.setImage(RedDoorImage); break;
                     default: tileView.setImage(floorImage); break;
                 }
                 world.getChildren().add(tileView);
@@ -159,6 +162,12 @@ public class map extends Application {
         if (doorLocation.contains(newPos)) {
             switchToBattleScene(stage);
             BattleManager battleManager = new BattleManager(this, scene, stage);
+            battleManager.start(stage);
+        }
+
+        if (doorLocation2.contains(newPos)) {
+            switchToBattleScene(stage);
+            Battle2 battleManager = new Battle2(this, scene, stage);
             battleManager.start(stage);
         }
 
