@@ -3,7 +3,6 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Bounds;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -25,15 +24,13 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
-public class Battle2 extends Application {
-        Media bgMusic = new Media(getClass().getResource("/sounds/bg_music.m4a").toExternalForm());
+public class UndyneStage extends Application {
+        Media bgMusic = new Media(getClass().getResource("/sounds/sans_bgmusic.m4a").toExternalForm());
         Media outro = new Media(getClass().getResource("/sounds/outro.mp3").toExternalForm());
 
         Random random = new Random();
@@ -53,7 +50,7 @@ public class Battle2 extends Application {
         Button fightButton = new Button("FIGHT");
         Button itemButton = new Button("ITEM");
         Button talkButton = new Button("TALK");
-        Alastor alastor = new Alastor(5);
+        Undyne undyne = new Undyne(50);
         Item atkUp = new Item(player);
         Item healpotion = new Item(player);
         Label hpLabel = new Label("");
@@ -62,7 +59,7 @@ public class Battle2 extends Application {
         private Scene mapScene;
         private Stage primaryStage;
 
-    public Battle2(map mapApp, Scene mapScene, Stage stage) {
+    public UndyneStage(map mapApp, Scene mapScene, Stage stage) {
         this.currentMapApp = mapApp;
         this.mapScene = mapScene;
         this.primaryStage = stage;
@@ -77,7 +74,7 @@ public class Battle2 extends Application {
 
         @Override
         public void start(Stage stage) {
-        alastor.setPlayer(player);
+            undyne.setPlayer(player);
 
         Pane root = new Pane();
         root.setStyle("-fx-background-color: black;");
@@ -169,8 +166,8 @@ public class Battle2 extends Application {
         villainImage_hurt.layoutYProperty().bind(scene.heightProperty().multiply(0.15));
         villainImage_hurt.setVisible(false);
 
-        alastor.setRoot(root);
-        alastor.setHeart(heart);
+            undyne.setRoot(root);
+            undyne.setHeart(heart);
 
         fightButton.setPrefWidth(120);
         fightButton.setPrefHeight(50);
@@ -208,7 +205,7 @@ public class Battle2 extends Application {
                 player.setDamage(5, 10);
                 damages = player.getDamages();
             }
-            int[] villainHP = {alastor.getHp()};
+            int[] villainHP = {undyne.getHp()};
             final Pane[] bossFightPane = new Pane[1];
 
             playTransition(battleBox, bossFightPane[0], () -> {
@@ -217,8 +214,8 @@ public class Battle2 extends Application {
             });
 
             bossFightPane[0] = BossFight(() -> {
-                alastor.setHp(villainHP[0]);
-                if (alastor.getHp() <= 0) {
+                undyne.setHp(villainHP[0]);
+                if (undyne.getHp() <= 0) {
                     GameFinished();
                     return;
                 }
@@ -534,19 +531,16 @@ public class Battle2 extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-            int choice = random.nextInt(3);
+//            int choice = random.nextInt(0);
+            int choice=0;
             int sd = switch (choice) {
                 case 0 -> {
-                    alastor.throwSpearAll();
-                    yield 10;
-                }
-                case 1 -> {
-                    alastor.Laser(r, p, P);
-                    yield 19;
-                }
-                case 2 -> {
-                    alastor.JumpyHeart(battleBox,heart);
-                    yield 15;
+                    undyne.multiSpiralWaterAttack(r, heart, () -> {
+                        currentState = GameState.PLAYER_CHOICE_OPTIONS;
+                        options_visibility(fightButton, talkButton, itemButton, true);
+                        heart.setVisible(false);
+                    });
+                    yield 100; // high delay to block next turn — overridden by callback
                 }
                 default -> 0;
             };
@@ -723,7 +717,7 @@ public class Battle2 extends Application {
             mediaPlayer.play();
         });
         mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-        mediaPlayer.setVolume(0.8);
+        mediaPlayer.setVolume(0.3);
         options_visibility(fightButton, talkButton, itemButton, false);
 
         String[] dialogues = {
@@ -872,36 +866,148 @@ public class Battle2 extends Application {
         delay.play();
     }
 
-        private void shakeStage(Stage stage) {
-        final int shakeDistance = 60;
-        final int shakeCycle = 60;
-        final int intervalMs = 60;
-        double originalX = stage.getX();
-        double originalY = stage.getY();
-
-        Timeline timeline = new Timeline();
-
-        for (int i = 0; i < shakeCycle; i++) {
-            KeyFrame keyFrame = new KeyFrame(Duration.millis(i * intervalMs), event -> {
-                double offsetX = (Math.random() - 0.5) * 2 * shakeDistance;
-                double offsetY = (Math.random() - 0.5) * 2 * shakeDistance;
-                stage.setX(originalX + offsetX);
-                stage.setY(originalY + offsetY);
-            });
-            timeline.getKeyFrames().add(keyFrame);
-        }
-        timeline.play();
-    }
-
         public static void main(String[] args) {
         launch(args);
     }
 }
 
-class Papyrus extends Villain {
+class Undyne extends Villain {
     private Player p;
+    AudioClip dmgtaken = new AudioClip(getClass().getResource("/sounds/hit.wav").toExternalForm());
 
-    public Papyrus(int hp) {
+    public void multiSpiralWaterAttack(Rectangle battleBox, Path heart, Runnable onFinish) {
+        Pane root = getRoot();
+
+        final int NUM_WAVES = 10;
+        final int NUM_DROPS = 48;
+        final double ANGLE_GAP = Math.PI / 24;
+        final double ROTATION_SPEED = 2.0;
+        final double RADIUS_SPEED = 60;
+        final double START_RADIUS = 50;
+        final double WAVE_INTERVAL = 1.5;
+
+        final boolean[] isInvincible = {false};
+        final int[] activeWaves = {0};
+
+        for (int wave = 0; wave < NUM_WAVES; wave++) {
+            int waveIndex = wave;
+
+            PauseTransition waveDelay = new PauseTransition(Duration.seconds(wave * WAVE_INTERVAL));
+            waveDelay.setOnFinished(event -> {
+                activeWaves[0]++;
+
+                List<Path> drops = new ArrayList<>();
+                List<Double> baseAngles = new ArrayList<>();
+
+                double[] offsets = {-100, 0, 100};
+                double startOffsetX = offsets[waveIndex % offsets.length];
+
+
+                double originX = heart.getLayoutX() + startOffsetX;
+                double originY = heart.getLayoutY();
+
+                for (int i = 0; i < NUM_DROPS; i++) {
+                    double angle = i * ANGLE_GAP;
+                    baseAngles.add(angle);
+
+                    Path drop = new Path();
+                    drop.getElements().addAll(
+                            new MoveTo(0, 0),
+                            new QuadCurveTo(5, -10, 0, -18),
+                            new QuadCurveTo(-5, -10, 0, 0)
+                    );
+                    drop.setFill(Color.WHITE);
+                    drop.setStroke(Color.WHITE);
+                    root.getChildren().add(drop);
+                    drops.add(drop);
+                }
+
+                AnimationTimer timer = new AnimationTimer() {
+                    long last = 0;
+                    double timeElapsed = 0;
+
+                    @Override
+                    public void handle(long now) {
+                        if (last == 0) {
+                            last = now;
+                            return;
+                        }
+                        double dt = (now - last) / 1e9;
+                        last = now;
+                        timeElapsed += dt;
+
+                        double radiusNow = START_RADIUS + timeElapsed * RADIUS_SPEED;
+
+                        for (int i = 0; i < drops.size(); i++) {
+                            double angle = baseAngles.get(i) + timeElapsed * ROTATION_SPEED;
+                            double x = originX + radiusNow * Math.cos(angle);
+                            double y = originY + radiusNow * Math.sin(angle);
+
+                            Path drop = drops.get(i);
+                            drop.setLayoutX(x);
+                            drop.setLayoutY(y);
+
+                            if (!isInvincible[0] &&
+                                    drop.getBoundsInParent().intersects(heart.getBoundsInParent())) {
+
+                                Shape intersection = Shape.intersect(drop, heart);
+                                if (intersection.getBoundsInLocal().getWidth() != -1) {
+                                    p.getdmg(8);
+                                    dmgtaken.play();
+                                    isInvincible[0] = true;
+
+                                    heart.setOpacity(0.5);
+                                    DropShadow flash = new DropShadow();
+                                    flash.setColor(Color.RED);
+                                    flash.setRadius(8);
+                                    heart.setEffect(flash);
+
+                                    PauseTransition removeFlash = new PauseTransition(Duration.millis(200));
+                                    removeFlash.setOnFinished(e -> heart.setEffect(null));
+                                    removeFlash.play();
+                                    PauseTransition restore = new PauseTransition(Duration.seconds(1));
+                                    restore.setOnFinished(e -> heart.setOpacity(1));
+                                    restore.play();
+
+                                    PauseTransition invincibility = new PauseTransition(Duration.seconds(1));
+                                    invincibility.setOnFinished(e -> isInvincible[0] = false);
+                                    invincibility.play();
+
+                                    root.getChildren().remove(drop);
+                                    drops.remove(i);
+                                    baseAngles.remove(i);
+                                    i--;
+                                    continue;
+                                }
+                            }
+
+                            Bounds bounds = drop.localToScene(drop.getBoundsInLocal());
+                            if (!battleBox.localToScene(battleBox.getBoundsInLocal()).contains(bounds)) {
+                                root.getChildren().remove(drop);
+                                drops.remove(i);
+                                baseAngles.remove(i);
+                                i--;
+                            }
+                        }
+
+                        if (timeElapsed > 6 || drops.isEmpty()) {
+                            for (Path drop : drops) root.getChildren().remove(drop);
+                            stop();
+                            activeWaves[0]--;
+
+                            if (activeWaves[0] == 0 && onFinish != null) {
+                                onFinish.run(); // ✅ Call back to let battle continue
+                            }
+                        }
+                    }
+                };
+                timer.start();
+            });
+            waveDelay.play();
+        }
+    }
+
+    public Undyne(int hp) {
         super(hp);
     }
 

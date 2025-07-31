@@ -167,7 +167,7 @@ public class map extends Application {
 
         if (doorLocation2.contains(newPos)) {
             switchToBattleScene(stage);
-            Battle2 battleManager = new Battle2(this, scene, stage);
+            UndyneStage battleManager = new UndyneStage(this, scene, stage);
             battleManager.start(stage);
         }
 
