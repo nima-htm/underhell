@@ -3,9 +3,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -42,7 +40,7 @@ public class map extends Application {
             "#................................................#",
             "#................................................#",
             "#................................................#",
-            "#................................................#",
+            "#.~..................................#...........#",
             "#................................................#",
             "#................................................#",
             "#................................................#",
@@ -59,7 +57,8 @@ public class map extends Application {
             "#...............................................$#"
     };
 
-    //coordinates
+    //coordinates// At the top of your class:
+    private final Set<Point2D> hiddenKeysClaimed = new HashSet<>();
     private Set<Point2D> puzzleLocations= Set.of(new Point2D(3, 2), new Point2D(MAP_WIDTH - 5, 5));
 
     private Set<Point2D> doorLocation  = Set.of(new Point2D(48, 29));  // top-right D
@@ -173,9 +172,9 @@ public class map extends Application {
             battleManager.start(stage);
         }
 
-        if (hiddenkey.contains(newPos)) {
-            hiddenKey(stage);
-            hiddenkey.remove(newPos);
+        if (hiddenkey.contains(newPos) && !hiddenKeysClaimed.contains(newPos)) {
+            hiddenKeysClaimed.add(newPos);  // mark this spot as already picked up
+            hiddenKey(stage);               // show your OK dialog
         }
 
         if (dy == 0 && dx < 0) {
@@ -300,25 +299,34 @@ public class map extends Application {
     }
 
     private void hiddenKey(Stage stage) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("BRILLIANT!~");
-        dialog.setHeaderText("YOU FOUND A  SPECIAL KEY!");
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("BRILLIANT!~");
+        alert.setHeaderText("YOU FOUND A SPECIAL KEY!");
+        alert.setContentText("Press OK to continue.");
+        alert.initOwner(stage);
 
-        Image doorImage = new Image(getClass().getResource("/key.png").toExternalForm()); // Your door image
-        ImageView imageView = new ImageView(doorImage);
-        imageView.setFitWidth(100);
-        imageView.setFitHeight(100);
-        dialog.setGraphic(imageView);
+        // Show an image in the dialog (optional)
+        Image img = new Image(getClass().getResource("/key.png").toExternalForm());
+        ImageView iv = new ImageView(img);
+        iv.setFitWidth(100);
+        iv.setFitHeight(100);
+        alert.setGraphic(iv);
 
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        // Style (optional)
+        DialogPane pane = alert.getDialogPane();
+        pane.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        pane.getButtonTypes().setAll(ButtonType.OK);  // ensure only OK
 
+        // Restore focus to your key-input target after closing:
+        alert.setOnHidden(e -> {
+            // If your key handlers are on a specific node, use that instead:
+            // gameRoot.requestFocus();
+            stage.getScene().getRoot().requestFocus();
+        });
 
-        Optional<String> result = dialog.showAndWait();
-//        result.ifPresent(answer -> {
-//
-//        });
+        alert.show(); // non-blocking; use showAndWait() if you prefer blocking
     }
+
 
     private void gameOver(Stage stage) {
 
