@@ -77,6 +77,7 @@ public class map extends Application {
 
     private double initialPlayerX = 1 * TILE_SIZE + 5;
     private double initialPlayerY = 1 * TILE_SIZE + 5;
+    Player p = new Player("mari",100,1);
 
     private Group world = new Group(); // Holds entire world (tiles + player)
 
@@ -88,6 +89,7 @@ public class map extends Application {
     @Override
     public void start(Stage stage) {
         Pane root = new Pane(world);
+        GameSession.get().setPlayer(p);
         Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
         Image floorImage = new Image(getClass().getResourceAsStream("/OIP.jfif"));
         Image doorImage = new Image(getClass().getResourceAsStream("/dd.png"));

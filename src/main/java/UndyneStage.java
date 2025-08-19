@@ -46,8 +46,9 @@ public class UndyneStage extends Application {
         private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
         private Button t_option1, t_option2, t_option3;
         private Button heal, BoostATK;
-        Player player = new Player("Maria", 100, 1);
-        Button fightButton = new Button("FIGHT");
+    Player player = GameSession.get().getPlayer();
+
+    Button fightButton = new Button("FIGHT");
         Button itemButton = new Button("ITEM");
         Button talkButton = new Button("TALK");
         Undyne undyne = new Undyne(50);
@@ -290,6 +291,7 @@ public class UndyneStage extends Application {
                 handlePlayerChoiceTwo(battleBox, root, player, "Heh\nAs if it makes any difference");
             }
             atkLabel.setText(atkUp.getAtkCount().get() + "");
+            heart.setVisible(true);
         });
         heal.setOnAction(e -> {
             if (healpotion.getHealCount().get() > 0 && player.getHp().get() < 100 && player.getHp().get() > 0) {
@@ -538,7 +540,7 @@ public class UndyneStage extends Application {
                     undyne.multiSpiralWaterAttack(r, heart, () -> {
                         currentState = GameState.PLAYER_CHOICE_OPTIONS;
                         options_visibility(fightButton, talkButton, itemButton, true);
-                        heart.setVisible(false);
+                        heart.setVisible(true);
                     });
                     yield 100; // high delay to block next turn — overridden by callback
                 }

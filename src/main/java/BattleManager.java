@@ -44,7 +44,7 @@ public class BattleManager extends Application {
     private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
     private Button t_option1, t_option2, t_option3;
     private Button heal, BoostATK;
-    Player player = new Player("Maria", 100, 1);
+    Player player = GameSession.get().getPlayer();
     Button fightButton = new Button("FIGHT");
     Button itemButton = new Button("ITEM");
     Button talkButton = new Button("TALK");
@@ -550,7 +550,7 @@ public class BattleManager extends Application {
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
-                heart.setVisible(false);
+                heart.setVisible(true);
             });
             resume.play();
         });
