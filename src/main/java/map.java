@@ -3,9 +3,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -26,44 +24,47 @@ public class map extends Application {
     private final int MAP_WIDTH = 50;
     private final int MAP_HEIGHT = 30;
     private boolean RightDir=true;
-    private String[] mapData= {
+    private String[] mapData = {
             "##################################################",
-            "#.$...........#.......................#...........#",
-            "#@######.#####.#.#########.#########.#.#####.#####.#",
-            "#.#....#.....#.#.#.......#.#.......#.#.#...#.....#.#",
-            "#.#.##.#####.#.#.#.###.#.#.#.###.#.#.#.#.###.###.#.#",
-            "#P#.#.......#.#.#...#.#.#...#...#.#.#.#...#...#.#.#",
-            "#.#.#.#####.#.#.#####.#.#####.###.#.#.###.###.#.#.#",
-            "#.#.#.....#.#.#.....#.#.......#...#.#.#...#...#.#.#",
-            "#.#.#####.#.#.#####.#.#########.###.#.#.#.###.#.#.#",
-            "#.#.....#.#.#.......#.........#.....#.#.#...#.#.#.#",
-            "#.#####.#.#.###################.#####.#.#.#.#.#.#.#",
-            "#.....#.#.#...............#.....#...#.#.#.#.#...#.#",
-            "#####.#.#.#############.#.#.#####.#.#.#.#.#.#####.#",
-            "#...#.#.#.#.........#.#.#.#.#...#.#.#.#.#.#.......#",
-            "#.#.#.#.#.#.#######.#.#.#.#.#.#.#.#.#.#.#.#########",
-            "#.#.#.#.#.#.#.....#.#.#.#.#.#.#.#.#.#.#.#.........#",
-            "#.#.#.#.#.#.#.###.#.#.#.#.#.#.#.#.#.#.#.#########.#",
-            "#.#.#.#.#.#.#.#K#.#.#.#.#.#.#.#.#.#.#.#.......#...#",
-            "#.#.#.#.#.#.#.###.#.#.#.#.#.#.#.#.#.#.#########.#.#",
-            "#.#.#.#.#.#.#.....#.#.#.#.#.#.#.#.#.#.........#.#.#",
-            "#.#.#.#.#.#.#######.#.#.#.#.#.#.#.#.#.#########.#.#",
-            "#.#.#.#.#.#.........#.#.#.#.#.#.#.#.#.#.........#.#",
-            "#.#.#.#.#.###########.#.#.#.#.#.#.#.#.#.#########.#",
-            "#.#.#.#.#.............#.#.#.#.#.#.#.#.#.........#.#",
-            "#.#.#.#.###############.#.#.#.#.#.#.#.#.#########.#",
-            "#.#.#.#.................#.#.#.#.#.#.#.#.........#.#",
-            "#.#.#.###################.#.#.#.#.#.#.#.#########.#",
-            "#.#.#.......................#.#.#.#.#.#.........#.#",
-            "#=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=..#",
-            "##################################################"
+            "#.............M..................................#",
+            "#@$..............................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#.~..................................#...........#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#",
+            "#................................................#"
     };
 
-    //coordinates
-    private Set<Point2D> puzzleLocations= Set.of(new Point2D(5, 5), new Point2D(MAP_WIDTH - 5, 5));
-    private Set<Point2D> doorLocation= Set.of(new Point2D(1, 2));
-    private Set<Point2D> doorLocation2= Set.of(new Point2D(2, 1));
-    private Set<Point2D> keyLocation= Set.of(new Point2D(3, MAP_HEIGHT - 3));
+    //coordinates// At the top of your class:
+    private final Set<Point2D> hiddenKeysClaimed = new HashSet<>();
+    private Set<Point2D> puzzleLocations= Set.of(new Point2D(3, 2), new Point2D(MAP_WIDTH - 5, 5));
+
+    private Set<Point2D> doorLocation  = Set.of(new Point2D(2, 2));  // top-right D
+    private Set<Point2D> doorLocation2 = Set.of(new Point2D(1, 2));  // bottom-left D
+
+    private Set<Point2D> keyLocation = Set.of(new Point2D(3, 1));
     private Set<Point2D> hiddenkey= Set.of(new Point2D(MAP_WIDTH / 2 + 1, MAP_HEIGHT / 2));
 
     private Image playerWalkGif = new Image(getClass().getResourceAsStream("/R.gif"));
@@ -76,6 +77,8 @@ public class map extends Application {
 
     private double initialPlayerX = 1 * TILE_SIZE + 5;
     private double initialPlayerY = 1 * TILE_SIZE + 5;
+    Player p = new Player("mari",100,1);
+    Item items = new Item(p);
 
     private Group world = new Group(); // Holds entire world (tiles + player)
 
@@ -87,10 +90,13 @@ public class map extends Application {
     @Override
     public void start(Stage stage) {
         Pane root = new Pane(world);
+        GameSession.get().setPlayer(p);
+        GameSession.get().setItems(items);
         Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
         Image floorImage = new Image(getClass().getResourceAsStream("/OIP.jfif"));
         Image doorImage = new Image(getClass().getResourceAsStream("/dd.png"));
         Image RedDoorImage = new Image(getClass().getResourceAsStream("/reddoor.png"));
+        Image New = new Image(getClass().getResourceAsStream("/flower.gif"));
 
         for (int y = 0; y < MAP_HEIGHT; y++) {
             for (int x = 0; x < MAP_WIDTH; x++) {
@@ -108,6 +114,7 @@ public class map extends Application {
                     case '=': tileView.setImage(wood); break;
                     case '@': tileView.setImage(doorImage); break;
                     case '$': tileView.setImage(RedDoorImage); break;
+                    case 'M': tileView.setImage(New); break;
                     default: tileView.setImage(floorImage); break;
                 }
                 world.getChildren().add(tileView);
@@ -171,8 +178,9 @@ public class map extends Application {
             battleManager.start(stage);
         }
 
-        if (hiddenkey.contains(newPos)) {
-            hiddenKey(stage);
+        if (hiddenkey.contains(newPos) && !hiddenKeysClaimed.contains(newPos)) {
+            hiddenKeysClaimed.add(newPos);  // mark this spot as already picked up
+            hiddenKey(stage);               // show your OK dialog
         }
 
         if (dy == 0 && dx < 0) {
@@ -297,25 +305,34 @@ public class map extends Application {
     }
 
     private void hiddenKey(Stage stage) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("BRILLIANT!~");
-        dialog.setHeaderText("YOU FOUND A  SPECIAL KEY!");
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("BRILLIANT!~");
+        alert.setHeaderText("YOU FOUND A SPECIAL KEY!");
+        alert.setContentText("Press OK to continue.");
+        alert.initOwner(stage);
 
-        Image doorImage = new Image(getClass().getResource("/key.png").toExternalForm()); // Your door image
-        ImageView imageView = new ImageView(doorImage);
-        imageView.setFitWidth(100);
-        imageView.setFitHeight(100);
-        dialog.setGraphic(imageView);
+        // Show an image in the dialog (optional)
+        Image img = new Image(getClass().getResource("/key.png").toExternalForm());
+        ImageView iv = new ImageView(img);
+        iv.setFitWidth(100);
+        iv.setFitHeight(100);
+        alert.setGraphic(iv);
 
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        // Style (optional)
+        DialogPane pane = alert.getDialogPane();
+        pane.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        pane.getButtonTypes().setAll(ButtonType.OK);  // ensure only OK
 
+        // Restore focus to your key-input target after closing:
+        alert.setOnHidden(e -> {
+            // If your key handlers are on a specific node, use that instead:
+            // gameRoot.requestFocus();
+            stage.getScene().getRoot().requestFocus();
+        });
 
-        Optional<String> result = dialog.showAndWait();
-//        result.ifPresent(answer -> {
-//
-//        });
+        alert.show(); // non-blocking; use showAndWait() if you prefer blocking
     }
+
 
     private void gameOver(Stage stage) {
 
