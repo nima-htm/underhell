@@ -26,8 +26,8 @@ public class map extends Application {
     private boolean RightDir=true;
     private String[] mapData = {
             "##################################################",
-            "#................................................#",
-            "#@...............................................#",
+            "#.............M..................................#",
+            "#@$..............................................#",
             "#................................................#",
             "#................................................#",
             "#................................................#",
@@ -54,14 +54,14 @@ public class map extends Application {
             "#................................................#",
             "#................................................#",
             "#................................................#",
-            "#...............................................$#"
+            "#................................................#"
     };
 
     //coordinates// At the top of your class:
     private final Set<Point2D> hiddenKeysClaimed = new HashSet<>();
     private Set<Point2D> puzzleLocations= Set.of(new Point2D(3, 2), new Point2D(MAP_WIDTH - 5, 5));
 
-    private Set<Point2D> doorLocation  = Set.of(new Point2D(48, 29));  // top-right D
+    private Set<Point2D> doorLocation  = Set.of(new Point2D(2, 2));  // top-right D
     private Set<Point2D> doorLocation2 = Set.of(new Point2D(1, 2));  // bottom-left D
 
     private Set<Point2D> keyLocation = Set.of(new Point2D(3, 1));
@@ -78,6 +78,7 @@ public class map extends Application {
     private double initialPlayerX = 1 * TILE_SIZE + 5;
     private double initialPlayerY = 1 * TILE_SIZE + 5;
     Player p = new Player("mari",100,1);
+    Item items = new Item(p);
 
     private Group world = new Group(); // Holds entire world (tiles + player)
 
@@ -90,10 +91,12 @@ public class map extends Application {
     public void start(Stage stage) {
         Pane root = new Pane(world);
         GameSession.get().setPlayer(p);
+        GameSession.get().setItems(items);
         Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
         Image floorImage = new Image(getClass().getResourceAsStream("/OIP.jfif"));
         Image doorImage = new Image(getClass().getResourceAsStream("/dd.png"));
         Image RedDoorImage = new Image(getClass().getResourceAsStream("/reddoor.png"));
+        Image New = new Image(getClass().getResourceAsStream("/flower.gif"));
 
         for (int y = 0; y < MAP_HEIGHT; y++) {
             for (int x = 0; x < MAP_WIDTH; x++) {
@@ -111,6 +114,7 @@ public class map extends Application {
                     case '=': tileView.setImage(wood); break;
                     case '@': tileView.setImage(doorImage); break;
                     case '$': tileView.setImage(RedDoorImage); break;
+                    case 'M': tileView.setImage(New); break;
                     default: tileView.setImage(floorImage); break;
                 }
                 world.getChildren().add(tileView);

@@ -52,8 +52,7 @@ public class UndyneStage extends Application {
         Button itemButton = new Button("ITEM");
         Button talkButton = new Button("TALK");
         Undyne undyne = new Undyne(50);
-        Item atkUp = new Item(player);
-        Item healpotion = new Item(player);
+        Item potion =GameSession.get().getItems();
         Label hpLabel = new Label("");
         Label atkLabel = new Label("");
         private map currentMapApp;
@@ -198,10 +197,10 @@ public class UndyneStage extends Application {
             heart.setVisible(false);
 
             ArrayList<Integer> damages;
-            if (atkUp.getAtkInUse() == 1) {
+            if (potion.getAtkInUse() == 1) {
                 playerAtk.setVisible(false);
                 damages = player.getDamages();
-                atkUp.setAtkInUse(0);
+                potion.setAtkInUse(0);
             } else {
                 player.setDamage(5, 10);
                 damages = player.getDamages();
@@ -277,31 +276,31 @@ public class UndyneStage extends Application {
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
         heal = createTalkOption("Heal", scene, 1);
-        hpLabel = createLable(healpotion.getHealCount().get() + "", scene, 1, hpLabel);
+        hpLabel = createLable(potion.getHealCount().get() + "", scene, 1, hpLabel);
         BoostATK = createTalkOption(" BoostATK", scene, 2);
-        atkLabel = createLable(atkUp.getAtkCount().get() + "", scene, 2, atkLabel);
+        atkLabel = createLable(potion.getAtkCount().get() + "", scene, 2, atkLabel);
         BoostATK.setOnAction(e -> {
-            if (atkUp.getHealCount().get() > 0) {
+            if (potion.getHealCount().get() > 0) {
                 playerAtk.setVisible(true);
                 ItemClicked.play();
-                atkUp.setAtkInUse(1);
-                atkUp.atkuse();
-                atkLabel.setText(atkUp.getAtkCount().get() + "");
-                atkUp.atkUp(15, 20);
+                potion.setAtkInUse(1);
+                potion.atkuse();
+                atkLabel.setText(potion.getAtkCount().get() + "");
+                potion.atkUp(15, 20);
                 handlePlayerChoiceTwo(battleBox, root, player, "Heh\nAs if it makes any difference");
             }
-            atkLabel.setText(atkUp.getAtkCount().get() + "");
+            atkLabel.setText(potion.getAtkCount().get() + "");
             heart.setVisible(true);
         });
         heal.setOnAction(e -> {
-            if (healpotion.getHealCount().get() > 0 && player.getHp().get() < 100 && player.getHp().get() > 0) {
-                healpotion.healuse();
-                hpLabel.setText(healpotion.getHealCount().get() + "");
-                healpotion.hpUp();
+            if (potion.getHealCount().get() > 0 && player.getHp().get() < 100 && player.getHp().get() > 0) {
+                potion.healuse();
+                hpLabel.setText(potion.getHealCount().get() + "");
+                potion.hpUp();
                 ItemClicked.play();
                 handlePlayerChoiceTwo(battleBox, root, player, "Postponing your death for a few seconds?\nHow foolish");
             }
-            hpLabel.setText(healpotion.getHealCount().get() + "");
+            hpLabel.setText(potion.getHealCount().get() + "");
         });
         t_option1.setOnAction(e -> {
             ItemClicked.play();
@@ -362,13 +361,14 @@ public class UndyneStage extends Application {
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
-        GameBeginningMethods();
+     //   GameBeginningMethods();
 
         final Set<KeyCode> activeKeys = new HashSet<>();
         scene.setOnKeyPressed(event -> {
             if (activeKeys.add(event.getCode())) {
                 if (event.getCode() == KeyCode.SHIFT) {
                     handlePlayerChoiceOne();
+
                 }
             }
         });
@@ -483,7 +483,7 @@ public class UndyneStage extends Application {
         label.layoutXProperty().bind(battleBox.xProperty().add(
                 battleBox.widthProperty().subtract(label.prefWidthProperty()).divide(2)).subtract(55));
         label.layoutYProperty().bind(battleBox.yProperty().add(40 + index * 50));
-        l.textProperty().bind(healpotion.getHealCount().asString());
+        l.textProperty().bind(potion.getHealCount().asString());
 
         return label;
 
@@ -518,6 +518,9 @@ public class UndyneStage extends Application {
         hpLabel.setVisible(false);
         atkLabel.setVisible(false);
         heart.setVisible(true);
+             battleBox.setFocusTraversable(true);
+             battleBox.requestFocus();
+              javafx.application.Platform.runLater(() -> battleBox.requestFocus());
 
     }
 
@@ -541,6 +544,7 @@ public class UndyneStage extends Application {
                         currentState = GameState.PLAYER_CHOICE_OPTIONS;
                         options_visibility(fightButton, talkButton, itemButton, true);
                         heart.setVisible(true);
+
                     });
                     yield 100; // high delay to block next turn — overridden by callback
                 }
@@ -550,7 +554,7 @@ public class UndyneStage extends Application {
             PauseTransition resume = new PauseTransition(Duration.seconds(sd + 1));
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
-                options_visibility(fightButton, talkButton, itemButton, true);
+                options_visibility(fightButton, talkButton, itemButton, false);
                 heart.setVisible(false);
             });
             resume.play();
@@ -893,10 +897,10 @@ class Undyne extends Villain {
 
         for (int wave = 0; wave < NUM_WAVES; wave++) {
             int waveIndex = wave;
-
+            activeWaves[0]++;
             PauseTransition waveDelay = new PauseTransition(Duration.seconds(wave * WAVE_INTERVAL));
             waveDelay.setOnFinished(event -> {
-                activeWaves[0]++;
+
 
                 List<Path> drops = new ArrayList<>();
                 List<Double> baseAngles = new ArrayList<>();

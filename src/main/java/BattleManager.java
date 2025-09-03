@@ -10,6 +10,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.AudioClip;
@@ -26,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+
+import static javafx.scene.input.KeyCode.NUMPAD3;
 
 public class BattleManager extends Application {
     Media bgMusic = new Media(getClass().getResource("/sounds/bg_music.m4a").toExternalForm());
@@ -49,8 +52,7 @@ public class BattleManager extends Application {
     Button itemButton = new Button("ITEM");
     Button talkButton = new Button("TALK");
     Alastor alastor = new Alastor(5);
-    Item atkUp = new Item(player);
-    Item healpotion = new Item(player);
+    Item potion =GameSession.get().getItems();
     Label hpLabel = new Label("");
     Label atkLabel = new Label("");
     private map currentMapApp;
@@ -195,10 +197,10 @@ public class BattleManager extends Application {
             heart.setVisible(false);
 
             ArrayList<Integer> damages;
-            if (atkUp.getAtkInUse() == 1) {
+            if (potion.getAtkInUse() == 1) {
                 playerAtk.setVisible(false);
                 damages = player.getDamages();
-                atkUp.setAtkInUse(0);
+                potion.setAtkInUse(0);
             } else {
                 player.setDamage(5, 10);
                 damages = player.getDamages();
@@ -274,30 +276,30 @@ public class BattleManager extends Application {
         t_option2 = createTalkOption("Insult", scene, 1);
         t_option3 = createTalkOption("Stay Silent", scene, 2);
         heal = createTalkOption("Heal", scene, 1);
-        hpLabel = createLable(healpotion.getHealCount().get() + "", scene, 1, hpLabel);
+        hpLabel = createLable(potion.getHealCount().get() + "", scene, 1, hpLabel);
         BoostATK = createTalkOption(" BoostATK", scene, 2);
-        atkLabel = createLable(atkUp.getAtkCount().get() + "", scene, 2, atkLabel);
+        atkLabel = createLable(potion.getAtkCount().get() + "", scene, 2, atkLabel);
         BoostATK.setOnAction(e -> {
-            if (atkUp.getHealCount().get() > 0) {
+            if (potion.getHealCount().get() > 0) {
                 playerAtk.setVisible(true);
                 ItemClicked.play();
-                atkUp.setAtkInUse(1);
-                atkUp.atkuse();
-                atkLabel.setText(atkUp.getAtkCount().get() + "");
-                atkUp.atkUp(15, 20);
+                potion.setAtkInUse(1);
+                potion.atkuse();
+                atkLabel.setText(potion.getAtkCount().get() + "");
+                potion.atkUp(15, 20);
                 handlePlayerChoiceTwo(battleBox, root, player, "Heh\nAs if it makes any difference");
             }
-            atkLabel.setText(atkUp.getAtkCount().get() + "");
+            atkLabel.setText(potion.getAtkCount().get() + "");
         });
         heal.setOnAction(e -> {
-            if (healpotion.getHealCount().get() > 0 && player.getHp().get() < 100 && player.getHp().get() > 0) {
-                healpotion.healuse();
-                hpLabel.setText(healpotion.getHealCount().get() + "");
-                healpotion.hpUp();
+            if (potion.getHealCount().get() > 0 && player.getHp().get() < 100 && player.getHp().get() > 0) {
+                potion.healuse();
+                hpLabel.setText(potion.getHealCount().get() + "");
+                potion.hpUp();
                 ItemClicked.play();
                 handlePlayerChoiceTwo(battleBox, root, player, "Postponing your death for a few seconds?\nHow foolish");
             }
-            hpLabel.setText(healpotion.getHealCount().get() + "");
+            hpLabel.setText(potion.getHealCount().get() + "");
         });
         t_option1.setOnAction(e -> {
             ItemClicked.play();
@@ -358,7 +360,7 @@ public class BattleManager extends Application {
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
-       GameBeginningMethods();
+      // GameBeginningMethods();
 
         final Set<KeyCode> activeKeys = new HashSet<>();
         scene.setOnKeyPressed(event -> {
@@ -368,6 +370,9 @@ public class BattleManager extends Application {
                 }
             }
         });
+        // once, when setting up the scene:
+
+
 
         scene.setOnKeyReleased(event -> activeKeys.remove(event.getCode()));
 
@@ -479,7 +484,7 @@ public class BattleManager extends Application {
         label.layoutXProperty().bind(battleBox.xProperty().add(
                 battleBox.widthProperty().subtract(label.prefWidthProperty()).divide(2)).subtract(55));
         label.layoutYProperty().bind(battleBox.yProperty().add(40 + index * 50));
-        l.textProperty().bind(healpotion.getHealCount().asString());
+        l.textProperty().bind(potion.getHealCount().asString());
 
         return label;
 
@@ -508,14 +513,19 @@ public class BattleManager extends Application {
     }
 
     private void handlePlayerChoiceOne() {
+
         options_visibility(fightButton, talkButton, itemButton, true);
         talk_options_visibility(false);
         item_options_visibility(false);
         hpLabel.setVisible(false);
         atkLabel.setVisible(false);
         heart.setVisible(true);
-
+        battleBox.setFocusTraversable(true);
+        battleBox.requestFocus();
+        javafx.application.Platform.runLater(() -> battleBox.requestFocus());
     }
+
+
 
     private void handlePlayerChoiceTwo(Rectangle r, Pane p, Player P, String s) {
         hpLabel.setVisible(false);
@@ -529,18 +539,19 @@ public class BattleManager extends Application {
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(ev -> {
             currentState = GameState.ENEMY_TURN;
-            int choice = random.nextInt(3);
+            int choice =2;
+            Runnable end = this::handlePlayerChoiceOne;
             int sd = switch (choice) {
                 case 0 -> {
-                    alastor.throwSpearAll();
+                    alastor.throwSpearAll(end);
                     yield 10;
                 }
                 case 1 -> {
-                    alastor.Laser(r, p, P);
+                    alastor.Laser(r, p, P,end);
                     yield 19;
                 }
                 case 2 -> {
-                    alastor.JumpyHeart(battleBox,heart);
+                    alastor.JumpyHeart(battleBox,heart,end);
                     yield 15;
                 }
                 default -> 0;
@@ -550,6 +561,11 @@ public class BattleManager extends Application {
             resume.setOnFinished(e -> {
                 currentState = GameState.PLAYER_CHOICE_OPTIONS;
                 options_visibility(fightButton, talkButton, itemButton, true);
+                System.out.println("beginPlayerChoice() called");
+               // battleBox.setFocusTraversable(true);
+               // battleBox.requestFocus();
+              //  javafx.application.Platform.runLater(() -> battleBox.requestFocus());
+
                 heart.setVisible(true);
             });
             resume.play();

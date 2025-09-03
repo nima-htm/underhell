@@ -48,7 +48,7 @@ public class Alastor extends Villain {
     AudioClip dmg_taken = new AudioClip(getClass().getResource("/sounds/damage-taken.mp3").toExternalForm());
     AudioClip hitSound = new AudioClip(getClass().getResource("/sounds/laser.wav").toExternalForm());
 
-    public void throwSpearAll() {
+    public void throwSpearAll(Runnable onFinish) {
         Image spearImg = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/spear.png")));
         int numberOfSpears = 12;
         double delayBetweenSpears = 0.7;
@@ -121,7 +121,7 @@ public class Alastor extends Villain {
     }
 
 
-    public void Laser(Rectangle battleBox, Pane root, Player p) {
+    public void Laser(Rectangle battleBox, Pane root, Player p,Runnable onFinish) {
         Random rand = new Random();
         int numberOfLasers = 60;
         double delayBetweenLasers = 0.3;
@@ -200,7 +200,7 @@ public class Alastor extends Villain {
     }
 
 
-    public void JumpyHeart(Rectangle battleBox, Path heart) {
+    public void JumpyHeart(Rectangle battleBox, Path heart,Runnable onFinish) {
         Pane root = getRoot();
         Scene scene = root.getScene();
 
@@ -215,6 +215,32 @@ public class Alastor extends Villain {
         int[] spawnTimer = {0}, patternCounter = {0}, difficultyTimer = {0};
         double[] spearSpeed = {3};
         boolean[] isInvincible = {false};
+        // add this with your other locals (after isInvincible, etc.)
+
+        // ADD these 6 lines near isInvincible/spearSpeed etc.
+        // put this where you create finished/finishOnce
+        final boolean[] finished = { false };
+        Runnable finishOnce = () -> {
+            if (finished[0]) return;
+            finished[0] = true;
+
+            // clean up any remaining nodes
+            for (Group g : spears) root.getChildren().remove(g);
+            spears.clear(); baseYs.clear(); amplitudes.clear(); speeds.clear(); phases.clear(); times.clear();
+
+            // 🔑 give focus back to the gameplay node used during battles
+            battleBox.setFocusTraversable(true);
+            battleBox.requestFocus();
+
+            // ensure it sticks, then invoke the outer callback
+            javafx.application.Platform.runLater(() -> {
+                battleBox.requestFocus();
+                if (onFinish != null) onFinish.run();
+            });
+        };
+
+
+
 
         AnimationTimer timer = new AnimationTimer() {
             long last = 0;
@@ -226,6 +252,7 @@ public class Alastor extends Villain {
                 double dt = (now - last) / 1e9;
                 last = now;
                 totalTime += dt;
+                boolean canSpawn = totalTime < 12.0;   // ADD: stop creating new spears after 12s
 
                 Bounds boxInScene = battleBox.localToScene(battleBox.getBoundsInLocal());
                 double minX = boxInScene.getMinX();
@@ -243,13 +270,16 @@ public class Alastor extends Villain {
                     phases.clear();
                     times.clear();
                     this.stop();
+                    finishOnce.run();   // <<< add this
                     return;
+
                 }
 
                 spawnTimer[0]++;
                 difficultyTimer[0]++;
-                if (spawnTimer[0] % 90 == 0) {
-                    double startX = minX - 40;
+                if (canSpawn && (spawnTimer[0] % 90 == 0)) {
+                    // ... unchanged spawn code ...
+                double startX = minX - 40;
                     patternCounter[0]++;
                     if (patternCounter[0] % 5 == 0) {
                         for (int i = 0; i < 5; i++) {
@@ -269,6 +299,9 @@ public class Alastor extends Villain {
                                 tip.setLayoutX(0);
                                 tip.setFill(Color.WHITE);
                                 Group spear = new Group(shaft, tip);
+                                spear.setMouseTransparent(true);
+                                spear.setPickOnBounds(false);
+
                                 spear.setLayoutX(startX - offset);
                                 double y = top ? minY + 10 : maxY;
                                 spear.setLayoutY(y);
@@ -415,10 +448,19 @@ public class Alastor extends Villain {
                     phases.remove(idx);
                     times.remove(idx);
                 }
+                // after the for (int idx : toRemove) { ... } block
+                // ADD this right after you remove toRemove
+                if (!canSpawn && spears.isEmpty()) {
+                    this.stop();
+                    finishOnce.run(); // ✅ single, guarded exit
+                    return;
+                }
+
+
             }
         };
 
-        scene.getRoot().requestFocus();
+        //scene.getRoot().requestFocus();
         timer.start();
     }
 
