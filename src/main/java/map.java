@@ -24,26 +24,24 @@ public class map extends Application {
     private final int MAP_WIDTH = 50;
     private final int MAP_HEIGHT = 30;
     private boolean RightDir=true;
-
-    // CHANGED: چند «درِ معما» با کاراکتر '?' به نقشه اضافه شد (طول ثابت ماند)
     private String[] mapData = {
             "##################################################",
-            "#.............M?.................................#", // ? در این ردیف
-            "#@$......?.......................................#", // ? در این ردیف
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#.~.................?...........#................#", // ? در این ردیف
-            "#................................................#",
+            "#PPPPPPPPPPPPPPPPPP....t......g..........g.....ttt",
+            "#################..#...#..t..####g#####....t.gcttt",
+            "#......................#.g..g~~~~~~~~~~~~~~~~~~~~t",
+            "###...ttttt....PPPPPP..#..........##########.....t",
+            "#....g......t.......g..tt..##....................#",
+            "#..........#######.....tt..##.................####",
+            "#.........##############....#......PPPPP..####...#",
+            "#.....PPPPPPPPPPPP...g......###########....?.....#",
+            "#....tttt....t..PPPPPP.....ttt.t...g..g....#.....#",
+            "#.#...g.###......##########.....t.t.....g..#.....#",
+            "##.........PPPP......tt...PPPPPPPPPPPPP....#.....#",
+            "#.##..PPPPP...############.............#...#.....#",
+            "##.....PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.#...#.....#",
+            "#...g..#####################g.t.t.......g..#.....#",
+            "#.~....g.................c#....#.....g.....#.....#",
+            "##############################################@###",
             "#................................................#",
             "#................................................#",
             "#................................................#",
@@ -59,12 +57,19 @@ public class map extends Application {
             "#................................................#"
     };
 
-    //coordinates
+    private final String DOOR_1_CODE = "38";
+    private final List<String> codePieces = List.of(
+            DOOR_1_CODE.substring(0,1),
+            DOOR_1_CODE.substring(1,2)
+    );
+    private final Set<Point2D> openedChests = new HashSet<>();
+
+
     private final Set<Point2D> hiddenKeysClaimed = new HashSet<>();
     private Set<Point2D> puzzleLocations= Set.of(new Point2D(3, 2), new Point2D(MAP_WIDTH - 5, 5));
 
-    private Set<Point2D> doorLocation  = Set.of(new Point2D(2, 2));  // top-right D
-    private Set<Point2D> doorLocation2 = Set.of(new Point2D(1, 2));  // bottom-left D
+    private Set<Point2D> doorLocation  = Set.of(new Point2D(46, 16));
+    private Set<Point2D> doorLocation2 = Set.of(new Point2D(8, 25));
 
     private Set<Point2D> keyLocation = Set.of(new Point2D(3, 1));
     private Set<Point2D> hiddenkey= Set.of(new Point2D(MAP_WIDTH / 2 + 1, MAP_HEIGHT / 2));
@@ -77,17 +82,16 @@ public class map extends Application {
     private Image water = new Image(getClass().getResourceAsStream("/w.gif"));
     private Image wood = new Image(getClass().getResourceAsStream("/wood.jpg"));
 
-    private double initialPlayerX = 1 * TILE_SIZE + 500;
-    private double initialPlayerY = 1 * TILE_SIZE + 500;
+    private double initialPlayerX = 1 * TILE_SIZE + 10;
+    private double initialPlayerY = 1 * TILE_SIZE + 10;
     Player p = new Player("mari",100,1);
     Item items = new Item(p);
 
-    private Group world = new Group(); // Holds entire world (tiles + player)
+    private Group world = new Group();
 
-    // NEW: برای تغییر تصویرِ یک خانه بعد از حل معما
+
     private ImageView[][] tileViews = new ImageView[MAP_HEIGHT][MAP_WIDTH];
 
-    // NEW: ردیف/ستون‌هایی از درهای معما که حل شده‌اند
     private final Set<Point2D> puzzleDoorsCleared = new HashSet<>();
 
     public void resetPlayerPosition() {
@@ -101,9 +105,13 @@ public class map extends Application {
         GameSession.get().setPlayer(p);
         GameSession.get().setItems(items);
         Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
-        Image floorImage = new Image(getClass().getResourceAsStream("/OIP.jfif"));
+        Image floorImage = new Image(getClass().getResourceAsStream("/grass.png"));
+        Image floorImage_grass = new Image(getClass().getResourceAsStream("/grass-floor.png"));
+        Image floorImage_tree = new Image(getClass().getResourceAsStream("/tree-floor.png"));
+        Image floorImage_path = new Image(getClass().getResourceAsStream("/path.png"));
         Image doorImage = new Image(getClass().getResourceAsStream("/dd.png"));
         Image RedDoorImage = new Image(getClass().getResourceAsStream("/reddoor.png"));
+        Image ChestTrophy = new Image(getClass().getResourceAsStream("/grass.png"));
         Image New = new Image(getClass().getResourceAsStream("/flower.gif"));
         Image ClosedDoorImage = new Image(getClass().getResourceAsStream("/trap.png"));
 
@@ -119,12 +127,16 @@ public class map extends Application {
                 switch (tile) {
                     case '#': tileView.setImage(wallImage); break;
                     case '.': tileView.setImage(floorImage); break;
+                    case 'g' :tileView.setImage(floorImage_grass); break;
+                    case 't' :tileView.setImage(floorImage_tree); break;
+                    case 'P' :tileView.setImage(floorImage_path); break;
                     case '~': tileView.setImage(water); break;
                     case '=': tileView.setImage(wood); break;
                     case '@': tileView.setImage(doorImage); break;
                     case '$': tileView.setImage(RedDoorImage); break;
                     case 'M': tileView.setImage(New); break;
                     case '?': tileView.setImage(ClosedDoorImage); break;
+                    case 'c': tileView.setImage(ChestTrophy); break;
                     default: tileView.setImage(floorImage); break;
                 }
                 world.getChildren().add(tileView);
@@ -154,7 +166,7 @@ public class map extends Application {
         stage.setScene(scene);
         stage.show();
 
-        centerCamera(stage); // initial centering
+        centerCamera(stage);
     }
 
     private void movePlayer(int dx, int dy, Stage stage) {
@@ -170,24 +182,40 @@ public class map extends Application {
 
         if (newX < 0 || newY < 0 || newX >= MAP_WIDTH || newY >= MAP_HEIGHT) return;
         char nextTile = mapData[newY].charAt(newX);
-
-        // NEW: درِ معما — اگر قبلاً باز نشده:
         if (nextTile == '?' && !puzzleDoorsCleared.contains(newPos)) {
-            boolean ok = showPuzzleDialog(stage); // حل معما
+            boolean ok = showPuzzleDialog(stage);
             if (ok) {
-                puzzleDoorsCleared.add(newPos);      // علامت‌گذاری به‌عنوان باز شده
-                replaceMapChar(newX, newY, '.');     // در را به کف تبدیل کن
-                tileViews[newY][newX].setImage(new Image(getClass().getResourceAsStream("/OIP.jfif"))); // رندر کف
-                // اجازه‌ی عبور می‌دهیم و ادامه‌ی حرکت پایین انجام می‌شود
+                puzzleDoorsCleared.add(newPos);
+                replaceMapChar(newX, newY, '.');
+                tileViews[newY][newX].setImage(new Image(getClass().getResourceAsStream("/grass.png"))); // رندر کف
+
             } else {
-                return; // پاسخ غلط → اجازه عبور نده
+                return;
             }
         }
 
         if (nextTile == '#') return;
+        if (nextTile == 't') return;
         if (nextTile == '~' && !hiddenkey.contains(newPos)) {
             gameOver(stage);
             return;
+        }
+        if (nextTile == 'c') {
+            if (!openedChests.contains(newPos)) {
+                int pieceIndex = openedChests.size();
+                char pieceChar = pieceIndex < DOOR_1_CODE.length()
+                        ? DOOR_1_CODE.charAt(pieceIndex)
+                        : '?';
+
+                openedChests.add(newPos);
+
+
+                showPieceDialog(stage, String.valueOf(pieceChar), openedChests.size());
+
+                replaceMapChar(newX, newY, '.');
+                tileViews[newY][newX].setImage(new Image(getClass().getResourceAsStream("/grass.png")));
+            }
+
         }
 
         if (doorLocation.contains(newPos)) {
@@ -203,8 +231,8 @@ public class map extends Application {
         }
 
         if (hiddenkey.contains(newPos) && !hiddenKeysClaimed.contains(newPos)) {
-            hiddenKeysClaimed.add(newPos);  // mark this spot as already picked up
-            hiddenKey(stage);               // show your OK dialog
+            hiddenKeysClaimed.add(newPos);
+            hiddenKey(stage);
         }
 
         if (dy == 0 && dx < 0) {
@@ -240,12 +268,12 @@ public class map extends Application {
         centerCamera(stage);
 
         if (puzzleLocations.contains(newPos))
-            showPuzzleDialog(stage); // (این یکی فقط پیام می‌ده—می‌تونی حذفش کنی)
+            showPuzzleDialog(stage);
         if (keyLocation.contains(newPos))
             showKey(stage);
     }
 
-    // NEW: جایگزینی کاراکتر در mapData (برای باز کردن دائمی درِ معما)
+
     private void replaceMapChar(int x, int y, char c) {
         char[] row = mapData[y].toCharArray();
         row[x] = c;
@@ -330,17 +358,12 @@ public class map extends Application {
         alert.showAndWait();
     }
 
-
     private boolean showPuzzleDialog(Stage stage) {
-        Random random = new Random();
-        int num1 = random.nextInt(100);
-        int num2 = random.nextInt(100);
-
         TextInputDialog dialog = new TextInputDialog();
         dialog.initOwner(stage);
-        dialog.setTitle("Puzzle Time!");
-        dialog.setHeaderText("Solve the puzzle to proceed");
-        dialog.setContentText("What is " + num1 + " + " + num2 + " ?");
+        dialog.setTitle("Enter Code");
+        dialog.setHeaderText("Enter the door code");
+        dialog.setContentText("Code:");
 
         applyDarkTheme(dialog);
 
@@ -349,26 +372,30 @@ public class map extends Application {
             String s = result.get().trim();
 
             if (s.isEmpty()) {
-                showErrorDialog(stage, "Input required!", "Please enter a number.");
+                showErrorDialog(stage, "Input required!", "Please enter a code.");
                 return false;
             }
 
-            try {
-                int val = Integer.parseInt(s);
-                if (val == num1 + num2) {
-                    return true;
-                } else {
-                    showErrorDialog(stage, "Wrong answer!", "You cannot pass.");
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                showErrorDialog(stage, "Invalid input!", "Please enter a valid number.");
+            if (s.equals(DOOR_1_CODE)) {
+                return true;
+            } else {
+                showErrorDialog(stage, "Wrong code!", "You cannot pass.");
                 return false;
             }
         }
 
-        showErrorDialog(stage, "Input required!", "Please enter a number.");
+        showErrorDialog(stage, "Input required!", "Please enter a code.");
         return false;
+    }
+
+    private void showPieceDialog(Stage stage, String piece, int count) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.initOwner(stage);
+        alert.setTitle("Chest Opened");
+        alert.setHeaderText("You found a code piece");
+        alert.setContentText("Piece: " + piece + "\nCollected: " + count);
+        applyDarkTheme(alert);
+        alert.showAndWait();
     }
 
 
