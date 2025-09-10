@@ -24,10 +24,12 @@ public class map extends Application {
     private final int MAP_WIDTH = 50;
     private final int MAP_HEIGHT = 30;
     private boolean RightDir=true;
+
+    // CHANGED: چند «درِ معما» با کاراکتر '?' به نقشه اضافه شد (طول ثابت ماند)
     private String[] mapData = {
             "##################################################",
-            "#.............M..................................#",
-            "#@$..............................................#",
+            "#.............M?.................................#", // ? در این ردیف
+            "#@$......?.......................................#", // ? در این ردیف
             "#................................................#",
             "#................................................#",
             "#................................................#",
@@ -40,7 +42,7 @@ public class map extends Application {
             "#................................................#",
             "#................................................#",
             "#................................................#",
-            "#.~..................................#...........#",
+            "#.~.................?...........#................#", // ? در این ردیف
             "#................................................#",
             "#................................................#",
             "#................................................#",
@@ -57,7 +59,7 @@ public class map extends Application {
             "#................................................#"
     };
 
-    //coordinates// At the top of your class:
+    //coordinates
     private final Set<Point2D> hiddenKeysClaimed = new HashSet<>();
     private Set<Point2D> puzzleLocations= Set.of(new Point2D(3, 2), new Point2D(MAP_WIDTH - 5, 5));
 
@@ -75,12 +77,18 @@ public class map extends Application {
     private Image water = new Image(getClass().getResourceAsStream("/w.gif"));
     private Image wood = new Image(getClass().getResourceAsStream("/wood.jpg"));
 
-    private double initialPlayerX = 1 * TILE_SIZE + 5;
-    private double initialPlayerY = 1 * TILE_SIZE + 5;
+    private double initialPlayerX = 1 * TILE_SIZE + 500;
+    private double initialPlayerY = 1 * TILE_SIZE + 500;
     Player p = new Player("mari",100,1);
     Item items = new Item(p);
 
     private Group world = new Group(); // Holds entire world (tiles + player)
+
+    // NEW: برای تغییر تصویرِ یک خانه بعد از حل معما
+    private ImageView[][] tileViews = new ImageView[MAP_HEIGHT][MAP_WIDTH];
+
+    // NEW: ردیف/ستون‌هایی از درهای معما که حل شده‌اند
+    private final Set<Point2D> puzzleDoorsCleared = new HashSet<>();
 
     public void resetPlayerPosition() {
         player.setTranslateX(initialPlayerX);
@@ -97,6 +105,7 @@ public class map extends Application {
         Image doorImage = new Image(getClass().getResourceAsStream("/dd.png"));
         Image RedDoorImage = new Image(getClass().getResourceAsStream("/reddoor.png"));
         Image New = new Image(getClass().getResourceAsStream("/flower.gif"));
+        Image ClosedDoorImage = new Image(getClass().getResourceAsStream("/trap.png"));
 
         for (int y = 0; y < MAP_HEIGHT; y++) {
             for (int x = 0; x < MAP_WIDTH; x++) {
@@ -115,9 +124,11 @@ public class map extends Application {
                     case '@': tileView.setImage(doorImage); break;
                     case '$': tileView.setImage(RedDoorImage); break;
                     case 'M': tileView.setImage(New); break;
+                    case '?': tileView.setImage(ClosedDoorImage); break;
                     default: tileView.setImage(floorImage); break;
                 }
                 world.getChildren().add(tileView);
+                tileViews[y][x] = tileView;
             }
         }
 
@@ -148,7 +159,6 @@ public class map extends Application {
 
     private void movePlayer(int dx, int dy, Stage stage) {
 
-
         if (dx == 0 && dy == 0)
             player.setImage(playerIdleImageRight);
 
@@ -160,6 +170,20 @@ public class map extends Application {
 
         if (newX < 0 || newY < 0 || newX >= MAP_WIDTH || newY >= MAP_HEIGHT) return;
         char nextTile = mapData[newY].charAt(newX);
+
+        // NEW: درِ معما — اگر قبلاً باز نشده:
+        if (nextTile == '?' && !puzzleDoorsCleared.contains(newPos)) {
+            boolean ok = showPuzzleDialog(stage); // حل معما
+            if (ok) {
+                puzzleDoorsCleared.add(newPos);      // علامت‌گذاری به‌عنوان باز شده
+                replaceMapChar(newX, newY, '.');     // در را به کف تبدیل کن
+                tileViews[newY][newX].setImage(new Image(getClass().getResourceAsStream("/OIP.jfif"))); // رندر کف
+                // اجازه‌ی عبور می‌دهیم و ادامه‌ی حرکت پایین انجام می‌شود
+            } else {
+                return; // پاسخ غلط → اجازه عبور نده
+            }
+        }
+
         if (nextTile == '#') return;
         if (nextTile == '~' && !hiddenkey.contains(newPos)) {
             gameOver(stage);
@@ -216,9 +240,16 @@ public class map extends Application {
         centerCamera(stage);
 
         if (puzzleLocations.contains(newPos))
-            showPuzzleDialog(stage);
+            showPuzzleDialog(stage); // (این یکی فقط پیام می‌ده—می‌تونی حذفش کنی)
         if (keyLocation.contains(newPos))
             showKey(stage);
+    }
+
+    // NEW: جایگزینی کاراکتر در mapData (برای باز کردن دائمی درِ معما)
+    private void replaceMapChar(int x, int y, char c) {
+        char[] row = mapData[y].toCharArray();
+        row[x] = c;
+        mapData[y] = new String(row);
     }
 
     private void centerCamera(Stage stage) {
@@ -260,24 +291,86 @@ public class map extends Application {
         stage.centerOnScreen();
     }
 
-    private void showPuzzleDialog(Stage stage) {
+    private void applyDarkTheme(Dialog<?> dialog) {
+        DialogPane pane = dialog.getDialogPane();
+        dialog.setGraphic(null);
+        pane.setGraphic(null);
+        pane.setStyle("-fx-background-color: black; -fx-border-color: white; -fx-border-width: 2px;");
+        var body = pane.lookup(".content.label");
+        if (body instanceof Label lbl) {
+            lbl.setTextFill(Color.WHITE);
+            lbl.setStyle("-fx-font-size: 16px;");
+        }
+        var headerLabel = pane.lookup(".header-panel .label");
+        if (headerLabel instanceof Label lbl2) {
+            lbl2.setTextFill(Color.WHITE);
+            lbl2.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        }
+        var textField = pane.lookup(".text-input");
+        if (textField instanceof TextField tf) {
+            tf.setStyle("-fx-background-color: black; -fx-text-fill: white; -fx-prompt-text-fill: #ffffff; -fx-border-color: white; -fx-border-width: 1px;");
+        }
+        List<ButtonType> keep = new ArrayList<>();
+        for (ButtonType bt : pane.getButtonTypes()) if (bt == ButtonType.OK) keep.add(bt);
+        if (keep.isEmpty()) keep.add(ButtonType.OK);
+        pane.getButtonTypes().setAll(keep);
+        for (ButtonType bt : pane.getButtonTypes()) {
+            Button b = (Button) pane.lookupButton(bt);
+            if (b != null) b.setStyle("-fx-background-color: black; -fx-text-fill: white; -fx-border-color: white; -fx-border-width: 1px; -fx-cursor: hand;");
+        }
+    }
+
+    private void showErrorDialog(Stage stage, String title, String msg) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.initOwner(stage);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        applyDarkTheme(alert);
+        alert.showAndWait();
+    }
+
+
+    private boolean showPuzzleDialog(Stage stage) {
         Random random = new Random();
         int num1 = random.nextInt(100);
         int num2 = random.nextInt(100);
 
         TextInputDialog dialog = new TextInputDialog();
+        dialog.initOwner(stage);
         dialog.setTitle("Puzzle Time!");
         dialog.setHeaderText("Solve the puzzle to proceed");
         dialog.setContentText("What is " + num1 + " + " + num2 + " ?");
 
+        applyDarkTheme(dialog);
+
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
-            String answer = result.get().trim();
-            if (!answer.equals(num1 + num2)) {
-                System.out.println(answer);
+            String s = result.get().trim();
+
+            if (s.isEmpty()) {
+                showErrorDialog(stage, "Input required!", "Please enter a number.");
+                return false;
+            }
+
+            try {
+                int val = Integer.parseInt(s);
+                if (val == num1 + num2) {
+                    return true;
+                } else {
+                    showErrorDialog(stage, "Wrong answer!", "You cannot pass.");
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                showErrorDialog(stage, "Invalid input!", "Please enter a valid number.");
+                return false;
             }
         }
+
+        showErrorDialog(stage, "Input required!", "Please enter a number.");
+        return false;
     }
+
 
     private void showKey(Stage stage) {
         TextInputDialog dialog = new TextInputDialog();
@@ -311,28 +404,19 @@ public class map extends Application {
         alert.setContentText("Press OK to continue.");
         alert.initOwner(stage);
 
-        // Show an image in the dialog (optional)
         Image img = new Image(getClass().getResource("/key.png").toExternalForm());
         ImageView iv = new ImageView(img);
         iv.setFitWidth(100);
         iv.setFitHeight(100);
         alert.setGraphic(iv);
 
-        // Style (optional)
         DialogPane pane = alert.getDialogPane();
         pane.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
-        pane.getButtonTypes().setAll(ButtonType.OK);  // ensure only OK
+        pane.getButtonTypes().setAll(ButtonType.OK);
 
-        // Restore focus to your key-input target after closing:
-        alert.setOnHidden(e -> {
-            // If your key handlers are on a specific node, use that instead:
-            // gameRoot.requestFocus();
-            stage.getScene().getRoot().requestFocus();
-        });
-
-        alert.show(); // non-blocking; use showAndWait() if you prefer blocking
+        alert.setOnHidden(e -> stage.getScene().getRoot().requestFocus());
+        alert.show();
     }
-
 
     private void gameOver(Stage stage) {
 
@@ -341,7 +425,6 @@ public class map extends Application {
         gameOverLabel.setStyle("-fx-font-size: 64px; -fx-font-weight: bold;");
         StackPane gameOverRoot = new StackPane(gameOverLabel);
         gameOverRoot.setStyle("-fx-background-color: black;");
-
         Scene gameOverScene = new Scene(gameOverRoot, 800, 600);
         stage.setScene(gameOverScene);
         stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
@@ -349,7 +432,6 @@ public class map extends Application {
         stage.setFullScreen(true);
         stage.setResizable(false);
         stage.centerOnScreen();
-
 
         PauseTransition delay = new PauseTransition(Duration.seconds(2));
         delay.setOnFinished(e -> Platform.exit());
@@ -360,3 +442,5 @@ public class map extends Application {
         launch();
     }
 }
+
+
