@@ -30,28 +30,30 @@ import java.util.Random;
 import java.util.Set;
 
 public class UndyneStage extends Application {
-        Media bgMusic = new Media(getClass().getResource("/sounds/sans_bgmusic.m4a").toExternalForm());
-        Media outro = new Media(getClass().getResource("/sounds/outro.mp3").toExternalForm());
+    Media bgMusic = new Media(getClass().getResource("/sounds/bg_music_pre.mp3").toExternalForm());
+    Media outro = new Media(getClass().getResource("/sounds/outro.mp3").toExternalForm());
 
-        Random random = new Random();
-        private Rectangle battleBox;
-        private Rectangle playerHPBackground;
-        private Pane dialogueBar;
-        private Text dialogueText;
-        private Path heart;
-        private Image villainImg;
-        private ImageView villainImage;
-        private Image villainImg_hurt;
-        private ImageView villainImage_hurt;
-        private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
-        private Button t_option1, t_option2, t_option3;
-        private Button heal, BoostATK;
+    Random random = new Random();
+    private Rectangle battleBox;
+    private Rectangle playerHPBackground;
+    private Pane dialogueBar;
+    private Text dialogueText;
+    private Path heart;
+    private Image villainImg;
+    private ImageView villainImage;
+    private Image villainImg_hurt;
+    private ImageView villainImage_hurt;
+    private GameState currentState = GameState.PLAYER_CHOICE_OPTIONS;
+    private Button t_option1, t_option2, t_option3;
+    private Button heal, BoostATK;
+    private AnimationTimer movement;
+
     Player player = GameSession.get().getPlayer();
 
     Button fightButton = new Button("FIGHT");
         Button itemButton = new Button("ITEM");
         Button talkButton = new Button("TALK");
-        Undyne undyne = new Undyne(50);
+        Undyne undyne = new Undyne(10);
         Item potion =GameSession.get().getItems();
         Label hpLabel = new Label("");
         Label atkLabel = new Label("");
@@ -64,9 +66,6 @@ public class UndyneStage extends Application {
         this.mapScene = mapScene;
         this.primaryStage = stage;
     }
-
-
-        // AudioClips
 
         AudioClip btnClicked = new AudioClip(getClass().getResource("/sounds/select-sound.mp3").toExternalForm());
         AudioClip ItemClicked = new AudioClip(getClass().getResource("/sounds/item.mp3").toExternalForm());
@@ -287,7 +286,7 @@ public class UndyneStage extends Application {
                 potion.atkuse();
                 atkLabel.setText(potion.getAtkCount().get() + "");
                 potion.atkUp(15, 20);
-                handlePlayerChoiceTwo(battleBox, root, player, "Heh\nAs if it makes any difference");
+                handlePlayerChoiceTwo(battleBox, root, player, "Heh\nNO difference");
             }
             atkLabel.setText(potion.getAtkCount().get() + "");
             heart.setVisible(true);
@@ -298,7 +297,7 @@ public class UndyneStage extends Application {
                 hpLabel.setText(potion.getHealCount().get() + "");
                 potion.hpUp();
                 ItemClicked.play();
-                handlePlayerChoiceTwo(battleBox, root, player, "Postponing your death for a few seconds?\nHow foolish");
+                handlePlayerChoiceTwo(battleBox, root, player, "Do you want to run away m$$8r ?\nHow stupid!!\nYou will not meet the BOSS !");
             }
             hpLabel.setText(potion.getHealCount().get() + "");
         });
@@ -306,7 +305,7 @@ public class UndyneStage extends Application {
             ItemClicked.play();
             talk_options_visibility(false);
             options_visibility(fightButton, talkButton, itemButton, false);
-            showDialogue("How childish\nYou may leave...for now", 2);
+            showDialogue("WEAK! Do better!", 2);
             PauseTransition pause = new PauseTransition(Duration.seconds(4));
             pause.setOnFinished(e2 -> {
                 handlePlayerChoiceTwo(battleBox, root, player, "HAHAHAAA");
@@ -361,7 +360,7 @@ public class UndyneStage extends Application {
                 fightButton, itemButton, talkButton, heal, playerNameText, playerLevelText, playerHp, BoostATK, atkLabel,
                 t_option1, t_option2, t_option3
         );
-     //   GameBeginningMethods();
+        GameBeginningMethods();
 
         final Set<KeyCode> activeKeys = new HashSet<>();
         scene.setOnKeyPressed(event -> {
@@ -375,7 +374,7 @@ public class UndyneStage extends Application {
 
         scene.setOnKeyReleased(event -> activeKeys.remove(event.getCode()));
 
-        AnimationTimer movement = new AnimationTimer() {
+        movement = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 double x = heart.getTranslateX();
@@ -546,7 +545,7 @@ public class UndyneStage extends Application {
                         heart.setVisible(true);
 
                     });
-                    yield 100; // high delay to block next turn — overridden by callback
+                    yield 100;
                 }
                 default -> 0;
             };
@@ -727,10 +726,8 @@ public class UndyneStage extends Application {
         options_visibility(fightButton, talkButton, itemButton, false);
 
         String[] dialogues = {
-                "Welcome to M Y H E L L <<<<<<<:::::: ",
-                "You're gonna Die soon",
-                "Or... Maybe we can make a deal...",
-                "A trade based on your \nS O U L <: "
+                "As Undyne, the great guard of Pathway,",
+                "There is no way you defeat me !"
         };
 
         double delayBetween = 2.5;
@@ -738,11 +735,11 @@ public class UndyneStage extends Application {
         for (int i = 0; i < dialogues.length; i++) {
             String line = dialogues[i];
             PauseTransition pause = new PauseTransition(Duration.seconds(i * delayBetween));
-            pause.setOnFinished(e -> showDialogue(line, 10));
+            pause.setOnFinished(e -> showDialogue(line, 5));
             pause.play();
         }
 
-        PauseTransition pause = new PauseTransition(Duration.seconds(10));
+        PauseTransition pause = new PauseTransition(Duration.seconds(5));
 
         pause.setOnFinished(ev -> {
             PauseTransition resume = new PauseTransition(Duration.seconds(0)); // Adjust as needed
@@ -755,7 +752,9 @@ public class UndyneStage extends Application {
         pause.play();
     }
         MediaPlayer outroMediaPlayer = new MediaPlayer(outro);
-        private void GameFinished() {
+
+
+    private void GameFinished() {
         if (!Platform.isFxApplicationThread()) {
             Platform.runLater(this::GameFinished);
             return;
@@ -770,68 +769,39 @@ public class UndyneStage extends Application {
         atkLabel.setVisible(false);
         heart.setVisible(false);
 
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-        }
-
-        AudioClip deathSound = new AudioClip(getClass().getResource("/sounds/death.mp3").toExternalForm());
-
+        if (movement != null) movement.stop();
+        if (mediaPlayer != null) mediaPlayer.stop();
+        try { if (outroMediaPlayer != null) outroMediaPlayer.stop(); } catch (Exception ignored) {}
 
         Pane root = (Pane) fightButton.getScene().getRoot();
         if (root == null) {
+            primaryStage.setScene(mapScene);
+            mapScene.getRoot().requestFocus();
+
+            Platform.runLater(() -> currentMapApp.removeBossDoorWithFade());
             return;
         }
-        Rectangle blackoutRectangle = new Rectangle();
-        blackoutRectangle.widthProperty().bind(root.widthProperty());
-        blackoutRectangle.heightProperty().bind(root.heightProperty());
-        blackoutRectangle.setFill(Color.BLACK);
-        blackoutRectangle.setOpacity(0);
+
+        FadeTransition fade = new FadeTransition(Duration.seconds(0.8), root);
+        fade.setToValue(0);
+        fade.setOnFinished(e -> {
+            primaryStage.setScene(mapScene);
+            primaryStage.setFullScreen(false);
+            primaryStage.setWidth(1280);
+            primaryStage.setHeight(720);
+            primaryStage.centerOnScreen();
+            mapScene.getRoot().requestFocus();
 
 
-        Label victoryLabel = new Label("V I C T O R Y");
-        victoryLabel.setStyle("-fx-font-size: 50px; -fx-font-weight: bold; -fx-text-fill: white;");
-        victoryLabel.layoutXProperty().bind(root.widthProperty().subtract(victoryLabel.widthProperty()).divide(2));
-        victoryLabel.layoutYProperty().bind(root.heightProperty().multiply(0.4));
-        victoryLabel.setOpacity(0);
-
-        Button quitButton = new Button("Quit Game");
-        quitButton.getStyleClass().add("game-button");
-        quitButton.layoutXProperty().bind(root.widthProperty().subtract(quitButton.widthProperty()).divide(2));
-        quitButton.layoutYProperty().bind(victoryLabel.layoutYProperty().add(80));
-        quitButton.setOpacity(0);
-        quitButton.setOnAction(e -> Platform.exit());
-
-        root.getChildren().addAll(blackoutRectangle, victoryLabel, quitButton);
-
-        FadeTransition fadeToBlack = new FadeTransition(Duration.seconds(3.0), blackoutRectangle);
-        fadeToBlack.setToValue(1);
-
-        fadeToBlack.setOnFinished(e -> {
-            deathSound.play();
-
+            Platform.runLater(() -> currentMapApp.removeBossDoorWithFade());
         });
-
-        FadeTransition textFadeIn = new FadeTransition(Duration.seconds(2), victoryLabel);
-        textFadeIn.setToValue(1);
-
-        FadeTransition buttonFadeIn = new FadeTransition(Duration.seconds(2), quitButton);
-        buttonFadeIn.setToValue(1);
-
-        ParallelTransition uiFadeIn = new ParallelTransition(textFadeIn, buttonFadeIn);
-
-
-        SequentialTransition sequence = new SequentialTransition(
-                new PauseTransition(Duration.seconds(1.0)),
-                fadeToBlack,
-                new PauseTransition(Duration.seconds(1.0)),
-                uiFadeIn
-        );
-        outroMediaPlayer.play();
-        sequence.play();
+        fade.play();
     }
 
 
-        private void gameOver(Stage stage) {
+
+
+    private void gameOver(Stage stage) {
         StackPane gameOverRoot = new StackPane();
         gameOverRoot.setStyle("-fx-background-color: black;");
 
@@ -879,7 +849,7 @@ public class UndyneStage extends Application {
 
 class Undyne extends Villain {
     private Player p;
-    AudioClip dmgtaken = new AudioClip(getClass().getResource("/sounds/hit.wav").toExternalForm());
+    AudioClip dmgtaken = new AudioClip(getClass().getResource("/sounds/damage-taken.mp3").toExternalForm());
 
     public void multiSpiralWaterAttack(Rectangle battleBox, Path heart, Runnable onFinish) {
         Pane root = getRoot();
@@ -1002,7 +972,7 @@ class Undyne extends Villain {
                             activeWaves[0]--;
 
                             if (activeWaves[0] == 0 && onFinish != null) {
-                                onFinish.run(); // ✅ Call back to let battle continue
+                                onFinish.run();
                             }
                         }
                     }

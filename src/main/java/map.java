@@ -1,3 +1,4 @@
+import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -42,35 +43,26 @@ public class map extends Application {
             "#...g..#####################g.t.t.......g..#.....#",
             "#.~....g.................c#....#.....g.....#.....#",
             "##############################################@###",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#",
-            "#................................................#"
+            "#$..........?....................g...........#...#",
+            "#############..........g.....................#...#",
+            "#g....tg.........................g......c....t...#",
+            "#...........g...........t............####....#...#",
+            "#......t.......t....t..#########.............#...#",
+            "#..........ف..........t.........#.....g......#...#",
+            "#.....g..........t.............#.............#...#",
+            "#............g..........t.......#............#...#",
+            "#g..g.................t........#...........g.#...#",
+            "#.....g............g............#............#...#",
+            "#.....g~~~~~~~~~~~~~~~~~~~~~~~t.....g........t...#",
+            "#.....c..g~~~~~~~~~~~~~~~~~~~~~~~t...............#",
+            "##################################################"
     };
+    private String DOORS_CODE = "3842";
 
-    private final String DOOR_1_CODE = "38";
-    private final List<String> codePieces = List.of(
-            DOOR_1_CODE.substring(0,1),
-            DOOR_1_CODE.substring(1,2)
-    );
     private final Set<Point2D> openedChests = new HashSet<>();
-
-
-    private final Set<Point2D> hiddenKeysClaimed = new HashSet<>();
-    private Set<Point2D> puzzleLocations= Set.of(new Point2D(3, 2), new Point2D(MAP_WIDTH - 5, 5));
-
-    private Set<Point2D> doorLocation  = Set.of(new Point2D(46, 16));
-    private Set<Point2D> doorLocation2 = Set.of(new Point2D(8, 25));
-
+                                                                      // 46 16
+    private final Set<Point2D> doorLocation  = new HashSet<>(Set.of(new Point2D(0, 0)));
+    private final Set<Point2D> doorLocation2 = new HashSet<>(Set.of(new Point2D(1, 17)));
     private Set<Point2D> keyLocation = Set.of(new Point2D(3, 1));
     private Set<Point2D> hiddenkey= Set.of(new Point2D(MAP_WIDTH / 2 + 1, MAP_HEIGHT / 2));
 
@@ -81,7 +73,7 @@ public class map extends Application {
     private Image playerIdleImageLeft = new Image(getClass().getResourceAsStream("/Stand(L).png"));
     private Image water = new Image(getClass().getResourceAsStream("/w.gif"));
     private Image wood = new Image(getClass().getResourceAsStream("/wood.jpg"));
-
+    private Image floorImage;
     private double initialPlayerX = 1 * TILE_SIZE + 10;
     private double initialPlayerY = 1 * TILE_SIZE + 10;
     Player p = new Player("mari",100,1);
@@ -104,8 +96,8 @@ public class map extends Application {
         Pane root = new Pane(world);
         GameSession.get().setPlayer(p);
         GameSession.get().setItems(items);
-        Image wallImage = new Image(getClass().getResourceAsStream("/R.jfif"));
-        Image floorImage = new Image(getClass().getResourceAsStream("/grass.png"));
+        Image wallImage = new Image(getClass().getResourceAsStream("/wall.png"));
+        floorImage = new Image(getClass().getResourceAsStream("/grass.png"));
         Image floorImage_grass = new Image(getClass().getResourceAsStream("/grass-floor.png"));
         Image floorImage_tree = new Image(getClass().getResourceAsStream("/tree-floor.png"));
         Image floorImage_path = new Image(getClass().getResourceAsStream("/path.png"));
@@ -151,7 +143,7 @@ public class map extends Application {
         player.setTranslateY(initialPlayerY);
         world.getChildren().add(player);
 
-        this.scene = new Scene(root, 1280, 720); // fixed screen size
+        this.scene = new Scene(root, 1280, 720);
         scene.setOnKeyPressed(event -> {
             int dx = 0, dy = 0;
             if (event.getCode() == KeyCode.W) dy = -1;
@@ -187,8 +179,7 @@ public class map extends Application {
             if (ok) {
                 puzzleDoorsCleared.add(newPos);
                 replaceMapChar(newX, newY, '.');
-                tileViews[newY][newX].setImage(new Image(getClass().getResourceAsStream("/grass.png"))); // رندر کف
-
+                tileViews[newY][newX].setImage(new Image(getClass().getResourceAsStream("/grass.png")));
             } else {
                 return;
             }
@@ -203,13 +194,11 @@ public class map extends Application {
         if (nextTile == 'c') {
             if (!openedChests.contains(newPos)) {
                 int pieceIndex = openedChests.size();
-                char pieceChar = pieceIndex < DOOR_1_CODE.length()
-                        ? DOOR_1_CODE.charAt(pieceIndex)
+                char pieceChar = pieceIndex < DOORS_CODE.length()
+                        ? DOORS_CODE.charAt(pieceIndex)
                         : '?';
 
                 openedChests.add(newPos);
-
-
                 showPieceDialog(stage, String.valueOf(pieceChar), openedChests.size());
 
                 replaceMapChar(newX, newY, '.');
@@ -218,22 +207,19 @@ public class map extends Application {
 
         }
 
-        if (doorLocation.contains(newPos)) {
+        if (doorLocation2.contains(newPos)) {
             switchToBattleScene(stage);
             BattleManager battleManager = new BattleManager(this, scene, stage);
             battleManager.start(stage);
         }
 
-        if (doorLocation2.contains(newPos)) {
+        if (doorLocation.contains(newPos)) {
             switchToBattleScene(stage);
             UndyneStage battleManager = new UndyneStage(this, scene, stage);
             battleManager.start(stage);
         }
 
-        if (hiddenkey.contains(newPos) && !hiddenKeysClaimed.contains(newPos)) {
-            hiddenKeysClaimed.add(newPos);
-            hiddenKey(stage);
-        }
+
 
         if (dy == 0 && dx < 0) {
             player.setImage(playerWalkGiff);
@@ -252,7 +238,6 @@ public class map extends Application {
 
         player.setTranslateX(newX * TILE_SIZE + 5);
         player.setTranslateY(newY * TILE_SIZE + 5);
-
         PauseTransition delay = new PauseTransition(Duration.millis(200));
         if(dy == 0 && RightDir)
             delay.setOnFinished(e -> player.setImage(playerIdleImageRight));
@@ -267,10 +252,6 @@ public class map extends Application {
 
         centerCamera(stage);
 
-        if (puzzleLocations.contains(newPos))
-            showPuzzleDialog(stage);
-        if (keyLocation.contains(newPos))
-            showKey(stage);
     }
 
 
@@ -306,12 +287,9 @@ public class map extends Application {
         Label battleLabel = new Label("Entering Hell...");
         battleLabel.setTextFill(Color.WHITE);
         battleLabel.setStyle("-fx-font-size: 48px; -fx-font-weight: bold;");
-
         StackPane battleRoot = new StackPane(battleLabel);
         battleRoot.setStyle("-fx-background-color: black;");
-
         Scene battleScene = new Scene(battleRoot, 1000, 800);
-
         stage.setScene(battleScene);
         stage.setFullScreen(false);
         stage.setWidth(1000);
@@ -376,7 +354,11 @@ public class map extends Application {
                 return false;
             }
 
-            if (s.equals(DOOR_1_CODE)) {
+            if (s.equals(DOORS_CODE.substring(0,2))) {
+                DOORS_CODE = "00" + DOORS_CODE.substring(2);
+                return true;
+            }
+            if(s.equals(DOORS_CODE.substring(2,4))) {
                 return true;
             } else {
                 showErrorDialog(stage, "Wrong code!", "You cannot pass.");
@@ -463,6 +445,30 @@ public class map extends Application {
         PauseTransition delay = new PauseTransition(Duration.seconds(2));
         delay.setOnFinished(e -> Platform.exit());
         delay.play();
+    }
+    public void removeBossDoorWithFade() {
+        for (int y = 0; y < MAP_HEIGHT; y++) {
+            for (int x = 0; x < MAP_WIDTH; x++) {
+                if (mapData[y].charAt(x) == '@') {
+                    ImageView doorView = tileViews[y][x];
+
+                    FadeTransition fade = new FadeTransition(Duration.millis(900), doorView);
+                    fade.setFromValue(1.0);
+                    fade.setToValue(0.0);
+                    int finalX = x;
+                    int finalY = y;
+                    fade.setOnFinished(ev -> {
+
+                        replaceMapChar(finalX, finalY, '.');
+                        doorView.setImage(floorImage);
+                        doorView.setOpacity(1.0);
+                        doorLocation.remove(new Point2D(finalX, finalY));
+                    });
+                    fade.play();
+                    return;
+                }
+            }
+        }
     }
 
     public static void main(String[] args) {
